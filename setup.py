@@ -12,6 +12,6 @@ except ImportError:
             'install_requires': ['nose'],
             'packages': ['cars'],
             'scripts': [],
-            'name': 'projectname'
+            'name': 'H-CARS'
             }
     setup(**config)

@@ -1,7 +1,13 @@
 
 class Recommender(object):
   def __init__(self):
-    print("Recommender")
+    print("Init Recommender")
 
-  def recomend(self, user, context):
-    print("Recommender#recomend")
+  def execute(self, debug=True):
+    if(debug == True):
+      init_model()
+      build_model()
+      #save_model()
+    else:
+      load_model()
+
