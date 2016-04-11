@@ -1,3 +1,4 @@
+from data.plotter import Plotter
 from recommender import Recommender
 from data.data_reader import DataReader
 
@@ -17,10 +18,13 @@ class RecommenderSystem(object):
   def __init__(self):
     self.data_object = DataReader().load()
     self.recommender = Recommender()
+    self.plotter = Plotter(self.data_object)
 
   def recomend(self, user, context):
     print("RecommenderSystem#recomend")
 
+
+##### TEST
 #colorbrewer2 Dark2 qualitative color table
 dark2_colors = [(0.10588235294117647, 0.6196078431372549, 0.4666666666666667),
                 (0.8509803921568627, 0.37254901960784315, 0.00784313725490196),
@@ -76,11 +80,14 @@ print "Number of Users", fulldf.userID.unique().shape[0], "Number of Movies", fu
 
 system = RecommenderSystem()
 data_object = system.data_object
+plotter = system.plotter
+
 data_object.number_of_movies()
 data_object.number_of_ratings()
 data_object.number_of_users()
 data_object.mean_rating_value()
-# data_object.plot_average_rating_hist()
-# data_object.plot_user_and_movie_hist()
-# data_object.plot_average_user_rating()
-# data_object.plot_average_movie_rating()
+
+# plotter.plot_average_rating_hist()
+# plotter.plot_user_and_movie_hist()
+# plotter.plot_average_user_rating()
+# plotter.plot_average_movie_rating()
