@@ -10,12 +10,13 @@ class DataReader(object):
   USER_COLUMNS = {'id': 0, 'age': 3, 'gender': 4, 'city': 5, 'country': 6, }
   MOVIE_COLUMNS = {'id': 1, 'director': 19, 'country': 20, 'language': 21, 'year': 22, 'genre':23, 'budget': 27}
  
-  def __init__(self, file_path="../dataset/ldos/LDOS-CoMoDa.xls"):
+  def __init__(self, file_path="../dataset/ldos/LDOS-CoMoDa_small.xls"):
     self.dataset_path = file_path
     self.work_book = xlrd.open_workbook(filename=self.dataset_path)
 
-  # TODO Get movies MetaData
-  def load(self):  
+  # TODO Get movies content MetaData
+  # TODO Use pandas directly
+  def load(self):
     sheet = self.work_book.sheet_by_name('Sheet1')
     user_data = []
     movie_data = []

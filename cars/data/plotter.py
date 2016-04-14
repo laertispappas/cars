@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+import numpy as np
 
 class Plotter(object):
     def __init__(self, data_object):
@@ -6,6 +7,25 @@ class Plotter(object):
         self.rating_data = data_object.rating_data
         self.movie_data = data_object.movie_data
         self.user_data = data_object.movie_data
+
+
+    def common_support(self):
+        movies = self.data_object.rating_data.movie_id.unique()
+        self.supports = []
+        print "Calculating support"
+        for i, movie1 in enumerate(movies):
+            for j, movie2 in enumerate(movies):
+                if i < j:
+                    movie1_reviewers = self.data_object.rating_data[
+                        self.data_object.rating_data.movie_id == movie1].user_id.unique()
+                    movie2_reviewers = self.data_object.rating_data[
+                        self.data_object.rating_data.movie_id == movie2].user_id.unique()
+                    common_reviewers = set(movie1_reviewers).intersection(movie2_reviewers)
+                    self.supports.append(len(common_reviewers))
+
+        print "Mean support is:", np.mean(self.supports)
+        plt.hist(self.supports)
+        plt.show()
 
     def plot_average_rating_hist(self):
         # Compute the average rating of reviews in the data set and a histogram of all the ratings in the dataset.
