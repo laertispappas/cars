@@ -8,6 +8,7 @@ from algs.recommender import Recommender
 from sklearn.metrics import mean_squared_error
 from sklearn.metrics import f1_score
 from sklearn.cross_validation import train_test_split, KFold
+from sklearn.metrics import average_precision_score
 from math import sqrt
 
 
@@ -310,6 +311,12 @@ class Evaluator(object):
     def __init__(self, item_knn):
         self.item_knn = item_knn
 
+    def evaluate_ratings(self):
+        raise NotImplementedError
+
+    def evaluate_ranking(self):
+        raise NotImplementedError
+
     def evaluate(self):
         print "k=2, reg=1."
         self.make_results_plot(2, 1.)
@@ -338,12 +345,40 @@ class Evaluator(object):
         rmse = sqrt(mean_squared_error(actual, predicted))
         print "RMSE= ", rmse
 
+    # TODO
     def f_score1(self):
-        y_true = [0, 1, 2, 0, 1, 2]
-        y_pred = [0, 2, 1, 0, 0, 1]
-        score = f1_score(y_true, y_pred, average='macro')
+        actual = self.actual_ratings().astype(int)
+        predicted = self.predicted_ratings().astype(int)
+        score = f1_score(actual, predicted, average='micro')
         print "F1 score= ", score
 
+    # TODO
+    def map(self):
+        print "calculatinf MAP"
+
+    # TODO
+    def groc_curves(self):
+        """
+        We use a global ROC (GROC) curve to measure performance
+        when we are allowed to recommend more often to
+        some users than others. GROC curves are constructed in
+        the following manner:
+        1. Order the predictions pred(pi, mj ) in a list
+            by magnitude, imposing an ordering: (p, m) k
+        2. Pick n, calculate hit/miss rates caused by predicting the top n (p, m)k by magnitude, and
+            plot the point
+            By selecting different n (e.g. incrementing n by a fixed amount) we draw a curve on the graph.
+        """
+
+        print "test"
+
+    # TODO
+    def croc_curves(self):
+        """
+        Customer ROC (CROC) curves measure performance of
+        a recommender system when we are constrained to recommend
+        the same number of items to each user.:
+        """
     def k_fold_cross_val_poly(folds, degrees, X, y):
         n = len(X)
         kf = KFold(n, n_folds=folds)
