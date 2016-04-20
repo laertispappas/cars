@@ -3,10 +3,11 @@ import pandas as pd
 class DataObject(object):
   "A class representing ratings data, movie data and user data"
 
-  def __init__(self, user_data, movie_data, rating_data):
+  def __init__(self, user_data, movie_data, rating_data, movie_metadata=None):
     self.user_data = pd.DataFrame(user_data)
     self.movie_data = pd.DataFrame(movie_data)
     self.rating_data = pd.DataFrame(rating_data)
+    self.movie_metadata = pd.DataFrame(movie_metadata.values())
 
     # Insert user average and movie average on rating data
     self.rating_data.insert(0, 'user_average', None)

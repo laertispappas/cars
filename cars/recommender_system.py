@@ -45,11 +45,12 @@ plotter = system.plotter
 # plotter.plot_average_user_rating()
 # plotter.plot_average_movie_rating()
 
-testuserid=42
-print "For user", testuserid, "the top recommendations are:"
-toprecos=system.recommender.get_top_recos_for_user(testuserid, system.recommender.data_object.rating_data, system.recommender.db, n=5, k=7, reg=3.)
-for biz_id, biz_avg in toprecos:
-    print biz_id, "| Average Rating |", biz_avg
+# testuserid=42
+# print "For user", testuserid, "the top recommendations are:"
+# toprecos=system.recommender.get_top_recos_for_user(testuserid, system.recommender.data_object.rating_data, system.recommender.db, n=5, k=7, reg=3.)
+# for biz_id, biz_avg in toprecos:
+#     print biz_id, "| Average Rating |", biz_avg
 
 # system.recommender.evaluator.evaluate()
-system.recommender.evaluator.evaluate_all()
+# system.recommender.evaluator.evaluate_all()
+print data_object.movie_metadata
