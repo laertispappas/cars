@@ -3,7 +3,7 @@ import pandas as pd
 class DataObject(object):
   "A class representing ratings data, movie data and user data"
 
-  def __init__(self, user_data, movie_data, rating_data, movie_metadata=None):
+  def __init__(self, user_data, movie_data, rating_data, movie_metadata=[]):
     self.user_data = pd.DataFrame(user_data)
     self.movie_data = pd.DataFrame(movie_data)
     self.rating_data = pd.DataFrame(rating_data)
@@ -13,6 +13,7 @@ class DataObject(object):
     self.rating_data.insert(0, 'user_average', None)
     self.rating_data.insert(0, 'movie_average', None)
 
+    #calculate user and item mean
     user_average_ratings = self.rating_data.groupby('user_id').rating.mean()
     movie_average_ratings = self.rating_data.groupby('movie_id').rating.mean()
 

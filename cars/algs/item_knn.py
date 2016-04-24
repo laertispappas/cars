@@ -18,6 +18,7 @@ class ItemKNN(Recommender):
         self.db = Database(self)
         self.db.calculate_similarities(self.pearson_sim)
         self.evaluator = Evaluator(self)
+        self.algo_name = "ItemKNN"
 
     """
     Function
