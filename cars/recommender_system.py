@@ -1,15 +1,15 @@
 from matplotlib import rcParams
 from algs.item_knn import ItemKNN
+from algs.camf_cuci import CAMF_CUCI
 from data.plotter import Plotter
 
 class RecommenderSystem(object):
     def __init__(self):
-        self.recommender = ItemKNN()
+        self.recommender = CAMF_CUCI()
         self.plotter = Plotter(self.recommender.data_object)
 
     def recomend(self, user, context):
         print("RecommenderSystem#recomend")
-
 
 #colorbrewer2 Dark2 qualitative color table
 dark2_colors = [(0.10588235294117647, 0.6196078431372549, 0.4666666666666667),
@@ -54,3 +54,18 @@ data_object = system.recommender.data_object
 # system.recommender.evaluator.evaluate()
 # system.recommender.evaluator.evaluate_all()
 # print data_object.movie_metadata
+
+system.recommender.data_object.print_specs()
+system.recommender.build_model()
+# print "Train Matrix:"
+# print system.recommender.train_matrix
+#
+# print "Test Matrix:"
+# print system.recommender.test_matrix
+#
+# print "Rating Matrix:"
+# print system.recommender.rating_matrix
+#
+# print "Rating Data:"
+# print data_object.rating_data
+# print system.recommender.train_matrix

@@ -22,7 +22,6 @@ def matrix_factorization(R, P, Q, K, steps=5000, alpha=0.0002, beta=0.02):
             break
     return P, Q.T
 
-
 R = [
      [5,3,0,1],
      [4,0,0,1],

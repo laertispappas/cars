@@ -2,14 +2,12 @@ import xlrd
 from data_object import DataObject
 
 class DataReader(object):
-  RATING_COLUMNS = {'user_id': 0, 'movie_id': 1, 'rating': 2, 
-        'time': 7, 'daytype': 8, 'season': 9, 'location': 10,
-        'weather': 11, 'social': 12, 'end_emotion': 13, 
-        'dominant_emotion': 14, 'mood': 15, 'physical':16,
-        'decision': 17, 'interaction': 8}
+  RATING_COLUMNS = {
+      'user_id': 0, 'movie_id': 1, 'rating': 2, 'social': 12 }
+
   USER_COLUMNS = {'id': 0, 'age': 3, 'gender': 4, 'city': 5, 'country': 6, }
-  MOVIE_COLUMNS = {'id': 1, 'director': 19, 'country': 20, 'language': 21, 'year': 22, 'genre':23, 'budget': 27}
-  MOVIE_METADATA_COLUMNS = {'id': 0, 'field_id': 1, 'value': 2}
+  MOVIE_COLUMNS = {'id': 1, 'director': 19, 'country': 20, 'language': 21, 'year': 22, 'genre':23, 'budget': 27 }
+  MOVIE_METADATA_COLUMNS = {'id': 0, 'field_id': 1, 'value': 2 }
  
   def __init__(self, file_path="../dataset/ldos/LDOS-CoMoDa_small.xls"):
     self.dataset_path = file_path
