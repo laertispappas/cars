@@ -5,7 +5,7 @@ from sklearn.cross_validation import train_test_split
 class DataObject(object):
   "A class representing ratings data, movie data and user data"
 
-  def __init__(self, user_data, movie_data, rating_data, movie_metadata=[]):
+  def __init__(self, user_data, movie_data, rating_data, movie_metadata={}):
     # Holds a mappings between a user / item index from Rating matrix to user and item id accordingly
     self.user_ids, self.movie_ids = {}, {}
 

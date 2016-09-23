@@ -57,15 +57,15 @@ data_object = system.recommender.data_object
 
 system.recommender.data_object.print_specs()
 system.recommender.build_model()
-# print "Train Matrix:"
-# print system.recommender.train_matrix
-#
-# print "Test Matrix:"
-# print system.recommender.test_matrix
-#
-# print "Rating Matrix:"
-# print system.recommender.rating_matrix
-#
-# print "Rating Data:"
-# print data_object.rating_data
-# print system.recommender.train_matrix
+print "Train Matrix:"
+print system.recommender.train_matrix
+
+print "Test Matrix:"
+print system.recommender.test_matrix
+
+print "Rating Matrix:"
+print system.recommender.rating_matrix
+
+print "Rating Data:"
+print data_object.rating_data
+print system.recommender.train_matrix

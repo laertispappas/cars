@@ -9,7 +9,7 @@ class CAMF_CUCI(Recommender):
     def __init__(self):
         super(self.__class__, self).__init__()
         self.algo_name = "CAMF_CUCI"
-        
+
         # user, item and bias regularizations
         self.reg_u = 0.001
         self.reg_i = 0.001
@@ -49,8 +49,8 @@ class CAMF_CUCI(Recommender):
             for c in range(self.num_conditions):
                 rand_value = np.random.randn()
                 self.ic_bias.setdefault(j, {c: rand_value})[c] = rand_value
-        
-        print self.uc_bias
+
+        # print self.uc_bias
 
     def build_model(self):
         print "*** Building model ***", self.algo_name
