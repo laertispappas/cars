@@ -10,7 +10,7 @@ except ImportError:
             'author_email': 'laertis.pappas@gmail.com',
             'version': '0.1',
             'install_requires': ['nose'],
-            'packages': ['cars'],
+            'packages': ['app'],
             'scripts': [],
             'name': 'H-CARS'
             }
