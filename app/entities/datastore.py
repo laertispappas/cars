@@ -48,10 +48,12 @@ class Datastore(object):
 class User(Base):
     __tablename__ = 'users'
     id = Column(Integer, primary_key=True)
+    city_id = Column(Integer)
     email = Column(String)
     gender = Column(String)
     birthday = Column(DATETIME)
 
+    # TODO: User city
     ratings = relationship("Rating", back_populates="user")
 
     def __repr__(self):

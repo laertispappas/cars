@@ -3,7 +3,6 @@
 # the apropriate data structure for recommender
 
 from app.entities.datastore import Datastore
-import pandas as pd
 
 class AutoVivification(dict):
     """Implementation of perl's autovivification feature."""
@@ -66,3 +65,32 @@ class Loader(object):
             #
             #
         return _ratings
+
+    @classmethod
+    def load_user_data(cls):
+        _user_data = AutoVivification()
+        store = Datastore()
+        for user in store.users():
+            _user_data[user.email]['gender'] = user.gender
+            _user_data[user.email]['birthday'] = user.birthday
+            _user_data[user.email]['city'] = user.city_id
+
+        return _user_data
+
+    @classmethod
+    def load_movie_data(cls):
+        _movie_data = AutoVivification()
+        store = Datastore()
+
+        for movie in store.movies():
+            _movie_data[movie.title]['director'] = movie.director
+            _movie_data[movie.title]['language'] = movie.language
+            _movie_data[movie.title]['country'] = movie.country
+            _movie_data[movie.title]['year'] = movie.year
+            _movie_data[movie.title]['actors'] = _movie_data[movie.title]['actors'] or []
+            _movie_data[movie.title]['genres'] = _movie_data[movie.title]['genres'] or []
+            for actor in movie.actors:
+                _movie_data[movie.title]['actors'].append(actor.name)
+            for genre in movie.genres:
+                _movie_data[movie.title]['genres'].append(genre.name)
+        return _movie_data
