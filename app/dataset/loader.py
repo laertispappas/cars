@@ -26,12 +26,12 @@ class Loader(object):
         key is the movie title.
         ex:
         "Game of thrones": {
-                "natia": {
+                "natia@example": {
                     "Location": [(condition, score), (condition, score), (condition, score)],
                     "Time": [(condition, score), (condition, score), condition, score])
                     "Company": (condition, score), (condition, score), condition, score],
                 },
-                'l.pappas': {
+                'l.pappas@example': {
                     "location": [()...],
                     "Time": [()...],
                     "Company": [()...]
@@ -50,20 +50,6 @@ class Loader(object):
                 context = condition.context
                 _ratings[movie.title][user.email][context.name] = _ratings[movie.title][user.email][context.name] or []
                 _ratings[movie.title][user.email][context.name].append((condition.name, rating.score))
-
-            # _ratings[movie.title]['ratings'][user.email] = _ratings[movie.title]['ratings'][user.email] or []
-            # _ratings[movie.title]['ratings'][user.email].append((rating.score, context.name, condition.name))
-            # _ratings[movie_title]['user_email'] = rating.user.email
-            # _ratings[movie_title]['meta']['actors'] = _ratings[movie_title]['meta']['actors'] or ()
-            # for actor in rating.movie.actors:
-            #     if actor.name not in _ratings[movie_title]['meta']['actors']:
-            #         _ratings[movie_title]['meta']['actors'] += (actor.name,)
-            # _ratings[movie_title]['user']['email'] = rating.user.email
-            # _ratings[movie_title]['user']['gender'] = rating.user.gender
-            # _ratings[movie_title]['user']['birthday'] = rating.user.birthday
-            #
-            #
-            #
         return _ratings
 
     @classmethod
@@ -86,6 +72,7 @@ class Loader(object):
             _movie_data[movie.title]['director'] = movie.director
             _movie_data[movie.title]['language'] = movie.language
             _movie_data[movie.title]['country'] = movie.country
+            _movie_data[movie.title]['budget'] = movie.budget
             _movie_data[movie.title]['year'] = movie.year
             _movie_data[movie.title]['actors'] = _movie_data[movie.title]['actors'] or []
             _movie_data[movie.title]['genres'] = _movie_data[movie.title]['genres'] or []
