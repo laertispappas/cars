@@ -52,6 +52,22 @@ class Loader(object):
                 _ratings[movie.title][user.email][context.name].append((condition.name, rating.score))
         return _ratings
 
+    """
+    Function
+    --------
+    load_user_data
+
+    Returns
+    --------
+    A dictionary of user data
+        key is the movie title.
+        ex:
+        "laertis.pappas@gmail.com": {
+            'gender': 'male',
+            'birthday': DateTime,
+            'city': 3
+        }
+    """
     @classmethod
     def load_user_data(cls):
         _user_data = AutoVivification()
@@ -63,6 +79,26 @@ class Loader(object):
 
         return _user_data
 
+    """
+    Function
+    --------
+    load_movie_data
+
+    Returns
+    --------
+    A dictionary of movies data
+        key is the movie title.
+        ex:
+        "Movie Title": {
+            'genres': ['Romance', 'Drama'],
+            'language': 'English',
+            'country': 'United States',
+            'budget': '25000000',
+            'director': 'Kirsten Sheridan',
+            'actors': ['Jonathan Rhys Meyers', u'Keri Russell', u'Freddie Highmore'],
+            'year': 2007
+        }
+    """
     @classmethod
     def load_movie_data(cls):
         _movie_data = AutoVivification()

@@ -7,6 +7,7 @@ def main():
     ratings_data = Loader().load_ratings()
     user_data = Loader().load_user_data()
     movie_data = Loader().load_movie_data()
-    print ratings_data.values()[0]
+    # print ratings_data.values()[0]
+    print movie_data.values()[0]
     # print user_data
 if __name__ == "__main__": main()

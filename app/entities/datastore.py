@@ -8,6 +8,8 @@ from sqlalchemy.sql.sqltypes import DATETIME
 Session = sessionmaker()
 Base = declarative_base()
 
+# Responsible to connect to PostgreSQL in order to extract data
+# for our algorithms
 class Datastore(object):
     def __init__(self):
         self.con = self.connect('laertispappas', 'pappas', 'my_movies_development')
