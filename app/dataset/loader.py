@@ -3,7 +3,10 @@
 # the apropriate data structure for recommender
 
 from app.entities.datastore import Datastore
+import pandas as pd
+import numpy as np
 
+# A perl like dictionary implementation
 class AutoVivification(dict):
     """Implementation of perl's autovivification feature."""
     def __getitem__(self, item):
@@ -14,7 +17,113 @@ class AutoVivification(dict):
             return value
 
 class Loader(object):
-    """Loads all ratings from DB and store to a dic"""
+    """Loads all ratings from DB and store to a dic or to pandas dataframe"""
+
+    """
+    Function
+    --------
+    pd_load_ratings
+
+    Returns
+    --------
+    A pandas data frame conatining all the user ratings in a given context:
+        ex =>
+           condition      context       movie_title    rating      user_email
+           Weekend         Time          Spark           3           foo@bar.com
+    """
+    @classmethod
+    def load_pd_ratings_data(self):
+        store = Datastore()
+        df_data = []
+        store = Datastore()
+        for rating in store.ratings():
+            movie = rating.movie
+            user = rating.user
+            for rating_condition in rating.rating_conditions:
+                condition = rating_condition.condition
+                context = condition.context
+                rating_data = {
+                    'db_id': rating.id,
+                    'movie_title': movie.title,
+                    'user_email': user.email,
+                    'user_id': user.id,
+                    'movie_id': movie.id,
+                    'context': context.name,
+                    'condition': condition.name,
+                    'rating': rating.score
+                }
+                df_data.append(rating_data)
+
+        return pd.DataFrame(df_data)
+    """
+    Function
+    --------
+    pd_load_users
+
+    Returns
+    --------
+    A pandas data frame conatining all the users data:
+        ex =>
+           email         gender       birthday      city_id
+           f@ba.co         male          Date           3
+
+
+    """
+    @classmethod
+    def load_pd_users_data(self):
+        store = Datastore()
+        df_data = []
+        store = Datastore()
+        for user in store.users():
+            _user_data = {
+                'db_id': user.id,
+                'email': user.email,
+                'gender': user.gender,
+                'birthday': user.birthday,
+                'city_id': user.city_id
+            }
+            df_data.append(_user_data)
+        return pd.DataFrame(df_data)
+
+
+    """
+    Function
+    --------
+    pd_load_movies
+
+    Returns
+    --------
+    A pandas data frame conatining all movie info
+
+    """
+    @classmethod
+    def load_pd_movies_data(self):
+        store = Datastore()
+        df_data = []
+        store = Datastore()
+
+        for movie in store.movies():
+            _movie_data = {
+                'db_id': movie.id,
+                'title': movie.title,
+                'director': movie.director,
+                'language': movie.language,
+                'country': movie.country,
+                'budget': movie.budget,
+                'year': movie.year,
+            }
+            actors = []
+            genres = []
+            for actor in movie.actors:
+                actors.append(actor.name)
+            for genre in movie.genres:
+                genres.append(genre.name)
+
+            _movie_data['actors'] = actors
+            _movie_data['genres'] = genres
+            df_data.append(_movie_data)
+        return pd.DataFrame(df_data)
+
     """
     Function
     --------

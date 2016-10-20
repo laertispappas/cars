@@ -32,11 +32,20 @@ class Datastore(object):
     def users(self):
         return self.session.query(User).all()
 
+    def total_users(self):
+        return self.session.query(User.id).count()
+
     def movies(self):
         return self.session.query(Movie).all()
 
+    def total_movies(self):
+        return self.session.query(Movie.id).count()
+
     def ratings(self):
         return self.session.query(Rating).all()
+
+    def total_ratings(self):
+        return self.session.query(Rating.id).count()
 
     def rating_conditions(self):
         return self.session.query(RatingCondition).all()
