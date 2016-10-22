@@ -2,10 +2,9 @@ import os, sys
 sys.path.insert(0, os.path.abspath(".."))
 
 from app.dataset.data_object import DataObject
-from app.dataset.loader import Loader
-
+from app.algorithm.cars.info_gain.info_gain_recommender import InfoGainRecommender
 
 def main():
     data_object = DataObject()
-    data_object.print_specs()
+    gain_recommender = InfoGainRecommender(data_object)
 if __name__ == "__main__": main()

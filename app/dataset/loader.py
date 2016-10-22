@@ -37,7 +37,6 @@ class Loader(object):
         filename = os.path.join(dir, 'ldos/LDOS-CoMoDa.csv')
 
         df = pd.read_csv(filename, na_values=['-1'])
-        # TODO: User Profile Builder
 
         # Replace missing values with the mean of available values
         for c in df.columns:
