@@ -3,6 +3,7 @@
 # the apropriate data structure for recommender
 
 from app.entities.datastore import Datastore
+import os
 import pandas as pd
 import numpy as np
 
@@ -21,12 +22,51 @@ class Loader(object):
 
     """
     Function
+    ---------
+    load_ldos_csv
+
+    Returns
+    ---------
+    A pandas data frame containing all user ratings
+    =>
+
+    """
+    @classmethod
+    def load_ldos_csv(self):
+        dir = os.path.dirname(__file__)
+        filename = os.path.join(dir, 'ldos/LDOS-CoMoDa.csv')
+
+        df = pd.read_csv(filename, na_values=['-1'])
+        # TODO: User Profile Builder
+
+        # Replace missing values with the mean of available values
+        for c in df.columns:
+            mean = df[c].mean()
+            df[c].fillna(mean)
+
+        # Store user / item data in a dictionary
+        user_db = AutoVivification()    # data-store for [userid][itemid] for training
+        movie_db = {}                   # data-store for [itemid][userid] for training
+        """
+        users = {userid: {itemid: [rating, age,sex,city,country, c1, c2, ................, c12]}}
+        items = {itemid: [director, a1, a2, a3, g1, g2, g3, budget, lang, country]}
+        """
+        # columns 2-19 user and contextual attributes
+        # 19-30 movie attributes
+        for rows in df.values:
+            user_db[rows[0]][rows[1]] = rows[2:19]
+            movie_db[rows[1]] = rows[19:]
+
+        return df, user_db, movie_db
+
+    """
+    Function
     --------
     pd_load_ratings
 
     Returns
     --------
-    A pandas data frame conatining all the user ratings in a given context:
+    A pandas data frame contaning all the user ratings in a given context:
         ex =>
            condition      context       movie_title    rating      user_email
            Weekend         Time          Spark           3           foo@bar.com
