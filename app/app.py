@@ -6,5 +6,6 @@ from app.algorithm.cars.info_gain.info_gain_recommender import InfoGainRecommend
 
 def main():
     data_object = DataObject()
-    gain_recommender = InfoGainRecommender(data_object)
+    recommender = InfoGainRecommender(data_object)
+    recommender.run()
 if __name__ == "__main__": main()
