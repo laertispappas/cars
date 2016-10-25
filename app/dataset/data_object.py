@@ -1,9 +1,20 @@
 from app.dataset.loader import Loader
 
 class DataObject(object):
+    # Non contextual feature atrributes for LDOS dataset
     NON_CONTEXT_ATTRS = ['userID','itemID','rating','age','sex','city','country', 'director', 'movieCountry',
                               'movieLanguage', 'movieYear', 'genre1', 'genre2', 'genre3', 'actor1', 'actor2','actor3',
                               'budget']
+
+    # Feature attributes for LDos dataset
+    feature_dict = {
+        'rating': 0, 'age': 1, 'sex': 2, 'city': 3,
+        'country': 4, 'time': 5, 'daytype': 6, 'season': 7,
+        'location': 8, 'weather': 9, 'social': 10,
+        'endEmo': 11, 'dominantEmo': 12, 'mood': 13,
+        'physical': 14, 'decision': 15, 'interaction': 16
+    }
+
     def __init__(self):
         self.ratings, self.users, self.movies = Loader().load_ldos_csv()
         self.total_ratings = self.__total_ratings()

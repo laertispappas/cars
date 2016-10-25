@@ -46,7 +46,7 @@ class BaseRecommender(object):
     ---------
         Nothing
     """
-    def predict(self, u, j):
+    def predict(self, u):
         return self.dao.average_rating
 
 

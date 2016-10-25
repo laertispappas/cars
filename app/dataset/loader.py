@@ -36,12 +36,12 @@ class Loader(object):
         dir = os.path.dirname(__file__)
         filename = os.path.join(dir, 'ldos/LDOS-CoMoDa.csv')
 
-        df = pd.read_csv(filename, na_values=['-1'])
+        df = pd.read_csv(filename, na_values='-1')
 
         # Replace missing values with the mean of available values
         for c in df.columns:
             mean = df[c].mean()
-            df[c].fillna(mean)
+            df[c] = df[c].fillna(mean)
 
         # Store user / item data in a dictionary
         user_db = AutoVivification()    # data-store for [userid][itemid] for training
