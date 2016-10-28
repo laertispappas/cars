@@ -1,4 +1,7 @@
+from app.dataset.data_plotter import DataPlotter
 from app.dataset.loader import Loader
+import pandas as pd
+import numpy as np
 
 class DataObject(object):
     # Non contextual feature atrributes for LDOS dataset
@@ -35,6 +38,18 @@ class DataObject(object):
         print "******"
         print 'Context types: ', self.context_types
         print "Total Context Types: ", self.total_context_types
+
+    def plot_stats(self):
+        plotter = DataPlotter(self)
+        plotter.ratings_per('age')
+        plotter.ratings_per('userID')
+
+    def top_rated(self, N=25):
+        pass
+
+    def high_rated_movies(self):
+        movie_stats = self.ratings.groupby('itemID').agg({'rating': [np.size, np.mean]})
+        return movie_stats.head()
 
     def __total_ratings(self):
         return len(self.ratings)

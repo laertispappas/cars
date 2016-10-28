@@ -7,8 +7,10 @@ from app.algorithm.cars.info_gain.info_gain_recommender import InfoGainRecommend
 def main():
     data_object = DataObject()
     data_object.print_specs()
-    recommender = InfoGainRecommender(data_object)
-    recommender.run()
+    data_object.plot_stats()
+
+    # recommender = InfoGainRecommender(data_object)
+    # recommender.run()
     # recommender.generate_graphs()
     # recommender.evaluate(193)
     # print recommender.top_recommendations(193)
