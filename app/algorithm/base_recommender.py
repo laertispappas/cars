@@ -3,9 +3,6 @@ class BaseRecommender(object):
         self.dao = data_object
 
     def run(self):
-        self.execute()
-
-    def execute(self):
         self.init_model()
         self.build_model()
 

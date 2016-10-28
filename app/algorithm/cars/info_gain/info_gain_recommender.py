@@ -16,6 +16,10 @@ OPTIMUM = 3.5 # Optimum rating for recommendation > 3.5
 VERBOSE = False
 
 class InfoGainRecommender(ContextRecommender):
+    def __init__(self, data_object):
+        super(self.__class__, self).__init__(data_object)
+        self.filters = [(8, 2), (5, 1), (9, 2), (10, 2), (6, 1), (16, 1), (13, 1), (7, 1), (14, 1), (12, 1), (11, 1)]
+
     def init_model(self):
         self.userprofile = self.__build_user_profile()
 
@@ -31,6 +35,7 @@ class InfoGainRecommender(ContextRecommender):
 
         plotter = Plotter(metrics)
         plotter.plot_precision_recall_curves()
+
     def evaluate(self, user):
         metrics = {}
 
@@ -48,9 +53,7 @@ class InfoGainRecommender(ContextRecommender):
             print "CF f1Score: ", f1score(precision_train, recall_train)
             print "CF total: ", len(recs)
 
-        # Context - Value tuple
-        filters = [(8, 2), (5, 1), (9, 2), (10, 2), (6, 1), (16, 1), (13, 1), (7, 1), (14, 1), (12, 1), (11, 1)]
-        filter_recs = self.__contextual_filter(self.dao.users, self.userprofile, user, recs, filters)
+        filter_recs = self.__contextual_filter(self.dao.users, self.userprofile, user, recs, self.filters)
 
         precision_test = precision(user, filter_recs, test_udb)
         recall_test = recall(user, filter_recs, test_udb)
@@ -67,14 +70,14 @@ class InfoGainRecommender(ContextRecommender):
         metrics['f1score'] = (fscore_train, fscore_test)
         return metrics
 
-    # Returns top recommendations for the given user.
-    def top_recommendations(self, user):
+    # Returns top N recommendations for the given user.
+    #
+    def top_recommendations(self, user, N = 10):
         recs = self.__user_cf_recs(self.dao.users, user)
 
         # Context - Value tuple
-        filters = [(8, 2), (5, 1), (9, 2), (10, 2), (6, 1), (16, 1), (13, 1), (7, 1), (14, 1), (12, 1), (11, 1)]
-        filter_recs = self.__contextual_filter(self.dao.users, self.userprofile, user, recs, filters)
-        return filter_recs
+        filter_recs = self.__contextual_filter(self.dao.users, self.userprofile, user, recs, self.filters)
+        return filter_recs[1:N]
 
     # Gets recommendations for a person by using a weighted average
     # of every other user's rankings User based CF
