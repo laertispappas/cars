@@ -1,4 +1,5 @@
 from app.algorithm.cars.context_recommender import ContextRecommender
+from app.algorithm.cars.info_gain.plotter import Plotter
 from app.dataset.data_object import DataObject
 from app.dataset.loader import AutoVivification
 import numpy
@@ -47,35 +48,47 @@ class InfoGainRecommender(ContextRecommender):
     def build_model(self):
         pass
 
+    def generate_graphs(self):
+        gain_user_ids = self.userprofile.keys()
+        metrics = {}
+        for user in gain_user_ids:
+            evaluation_metrics = self.evaluate(user)
+            metrics[user] = evaluation_metrics
+
+        plotter = Plotter(metrics)
+        plotter.plot_precision_recall_curves()
     def evaluate(self, user):
+        metrics = {}
+
         train_udb, test_udb = self.__remove_for_testing(self.dao.users, user)
         recs = self.__user_cf_recs(train_udb, user)
 
-        precision_train, recall_train = precision(user, recs, test_udb), recall(user, recs, test_udb)
-        print "CF precision: ", precision_train
-        print "CF recall: ", recall_train
-        print "CF f1Score: ", f1score(precision_train, recall_train)
-        print "CF total: ", len(recs)
+        precision_train = precision(user, recs, test_udb)
+        recall_train = recall(user, recs, test_udb)
+        fscore_train = f1score(precision_train, recall_train)
+        # print "****************************************************************************************************"
+        # print "CF precision: ", precision_train
+        # print "CF recall: ", recall_train
+        # print "CF f1Score: ", f1score(precision_train, recall_train)
+        # print "CF total: ", len(recs)
 
         # Context - Value tuple
         filters = [(8, 2), (5, 1), (9, 2), (10, 2), (6, 1), (16, 1), (13, 1), (7, 1), (14, 1), (12, 1), (11, 1)]
         filter_recs = self.__contextual_filter(self.dao.users, self.userprofile, user, recs, filters)
-        precision_test, recall_test = precision(user, filter_recs, test_udb), recall(user, filter_recs, test_udb)
-        print precision_test, recall_test, len(filter_recs)
-        print "****"
-        print "Filtered precision: ", precision_test
-        print "Filtered recall: ", recall_test
-        print "Filtered f1Score: ", f1score(precision_test, recall_test)
-        print "Filtered total: ", len(filter_recs)
 
-    def generate_graphs(self):
-        # Generate Precision Graphs
-        # Generate Recall Graphs
-        # Genrate f1Score Graphs
-        gain_user_ids = self.userprofile.keys()
-        for user in gain_user_ids:
-            print "Evaluating user", user
-            self.evaluate(user)
+        precision_test = precision(user, filter_recs, test_udb)
+        recall_test = recall(user, filter_recs, test_udb)
+        fscore_test = f1score(precision_test, recall_test)
+        # print precision_test, recall_test, f1score(precision_test, recall_test), len(filter_recs)
+        # print "Filtered precision: ", precision_test
+        # print "Filtered recall: ", recall_test
+        # print "Filtered f1Score: ", f1score(precision_test, recall_test)
+        # print "Filtered total: ", len(filter_recs)
+        # print "****************************************************************************************************"
+        metrics['precision'] = (precision_train, precision_test)
+        metrics['recall'] = (recall_train, recall_test)
+        metrics['f1score'] = (fscore_train, fscore_test)
+        return metrics
 
     # Returns top recommendations for the given user.
     def top_recommendations(self, user):
