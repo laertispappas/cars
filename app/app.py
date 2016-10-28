@@ -8,6 +8,6 @@ def main():
     data_object = DataObject()
     recommender = InfoGainRecommender(data_object)
     recommender.run()
-    recommender.generate_graphs()
-    # recommender.evaluate(193)
+    # recommender.generate_graphs()
+    recommender.evaluate(193)
 if __name__ == "__main__": main()
