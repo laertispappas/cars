@@ -36,11 +36,14 @@ def recall(user, recommendations, udb):
     return tp/float(good_movies)
 
 def f1score(precision, recall):
+    if precision + recall == 0:
+        return 0
     return 2 * (precision * recall)/(precision + recall)
 
 class InfoGainRecommender(ContextRecommender):
     def init_model(self):
         self.userprofile = self.__build_user_profile()
+
     def build_model(self):
         pass
 
@@ -57,7 +60,6 @@ class InfoGainRecommender(ContextRecommender):
         # Context - Value tuple
         filters = [(8, 2), (5, 1), (9, 2), (10, 2), (6, 1), (16, 1), (13, 1), (7, 1), (14, 1), (12, 1), (11, 1)]
         filter_recs = self.__contextual_filter(self.dao.users, self.userprofile, user, recs, filters)
-
         precision_test, recall_test = precision(user, filter_recs, test_udb), recall(user, filter_recs, test_udb)
         print precision_test, recall_test, len(filter_recs)
         print "****"
@@ -65,6 +67,15 @@ class InfoGainRecommender(ContextRecommender):
         print "Filtered recall: ", recall_test
         print "Filtered f1Score: ", f1score(precision_test, recall_test)
         print "Filtered total: ", len(filter_recs)
+
+    def generate_graphs(self):
+        # Generate Precision Graphs
+        # Generate Recall Graphs
+        # Genrate f1Score Graphs
+        gain_user_ids = self.userprofile.keys()
+        for user in gain_user_ids:
+            print "Evaluating user", user
+            self.evaluate(user)
 
     # Returns top recommendations for the given user.
     def top_recommendations(self, user):
@@ -136,7 +147,6 @@ class InfoGainRecommender(ContextRecommender):
             if i > limit: break
         # print len(train_udb[user]), len(test_udb[user]), len(udb[user])
         return train_udb, test_udb
-
     """
     Function
     __contextual_filter
@@ -169,7 +179,7 @@ class InfoGainRecommender(ContextRecommender):
     def __find_max_context(self, movie, context, udb):
         list_context = []
         for user in udb:
-            if udb[user][movie][context] != {} and udb[user][movie][RATING] >= OPTIMUM:
+            if movie in udb[user] and udb[user][movie][RATING] >= OPTIMUM:
                 value = udb[user][movie][context]
                 if type(value) == numpy.float64:
                     list_context.append(udb[user][movie][context])

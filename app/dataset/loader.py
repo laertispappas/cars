@@ -44,7 +44,7 @@ class Loader(object):
             df[c] = df[c].fillna(mean)
 
         # Store user / item data in a dictionary
-        user_db = AutoVivification()    # data-store for [userid][itemid] for training
+        user_db = {} #AutoVivification()    # data-store for [userid][itemid] for training
         movie_db = {}                   # data-store for [itemid][userid] for training
         """
         users = {userid: {itemid: [rating, age,sex,city,country, c1, c2, ................, c12]}}
@@ -53,6 +53,10 @@ class Loader(object):
         # columns 2-19 user and contextual attributes
         # 19-30 movie attributes
         for rows in df.values:
+            if rows[0] not in user_db:
+                user_db[rows[0]] = {}
+            if rows[1] not in user_db[rows[0]]:
+                user_db[rows[0]][rows[1]] = []
             user_db[rows[0]][rows[1]] = rows[2:19]
             movie_db[rows[1]] = rows[19:]
 
