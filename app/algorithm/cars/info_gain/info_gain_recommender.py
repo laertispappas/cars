@@ -70,7 +70,7 @@ class InfoGainRecommender(ContextRecommender):
         metrics['f1score'] = (fscore_train, fscore_test)
         return metrics
 
-    # Returns top N recommendations for the given user.
+    # Returns top N context aware recommendations for the given user.
     #
     def top_recommendations(self, user, N = 10):
         recs = self.__user_cf_recs(self.dao.users, user)

@@ -27,6 +27,11 @@ class DataObject(object):
         print "Num of ratings", self.total_ratings
         print "Num of users", self.total_users
         print "Num of movies", self.total_movies
+        print "Average age", int(self.ratings['age'].mean())
+        print "Num of countries", len(self.ratings['country'].unique())
+        print "Num of Cities", len(self.ratings['city'].unique())
+        print "Min ratings of single User", self.ratings.groupby('userID').size().min()
+        print "Max ratings of single User", self.ratings.groupby('userID').size().max()
         print "******"
         print 'Context types: ', self.context_types
         print "Total Context Types: ", self.total_context_types
