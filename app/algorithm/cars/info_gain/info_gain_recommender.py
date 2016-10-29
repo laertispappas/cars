@@ -34,7 +34,8 @@ class InfoGainRecommender(ContextRecommender):
             precision_metrics[user] = metric
 
         plotter = Plotter(precision_metrics)
-        plotter.plot_precision_bar()
+        plotter.plot_precision_bar(type='precision')
+        plotter.plot_precision_bar(type='recall')
         plotter.plot_precision_recall_curves()
 
     def evaluate(self, user):
