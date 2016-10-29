@@ -3,6 +3,7 @@ import pylab as pl
 import itertools as it
 import numpy as np
 import matplotlib.pyplot as plt
+import re
 
 def fmeasure(p, r):
     """ Calculates the fmeasure for precision p and recall r. """
@@ -61,7 +62,6 @@ def plotPrecisionRecallDiagram(title="title", points=None, labels=None, loc="cen
         for i, (x, y) in enumerate(points):
             label = None
             if labels: label = labels[i]
-            print i, x, y, label
             scp = ax.scatter(x, y, label=label, s=50, linewidths=0.75,
                              facecolor=getColor(), alpha=0.75, marker=getMarker())
             scps.append(scp)
@@ -113,4 +113,20 @@ class Plotter(object):
         ax.set_xticklabels(self.user_labels)
 
         ax.legend((rects1[0], rects2[0]), ('Simple Recommendation', 'Contextual Recommendation'))
+        plt.show()
+
+    def plot_num_of_recommendations(self):
+        recs = []
+        ctx_recs = []
+        user_ids = self.metrics.keys()
+        user_ids.sort()
+        for user in user_ids:
+            recs.append(self.metrics[user]['total_recs'])
+            ctx_recs.append(self.metrics[user]['total_ctx_recs'])
+
+
+        plt.plot(user_ids, recs, '-b', label='Simple Recommendations')
+        plt.plot(user_ids, ctx_recs, '-r', label='Contextual Recommendations')
+        plt.legend(loc='upper left')
+        plt.plot(user_ids, recs)
         plt.show()

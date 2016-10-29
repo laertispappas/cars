@@ -20,6 +20,12 @@ class DataPlotter(object):
 
         plt.show()
 
+    # x num of movies / genre
+    # rating / genre per male / female
+    #
+    def num_of_movies_per_genre(self):
+        pass
+
     # Which movies are most controversial amongst different ages?
     # how movies are viewed across different age groups. look at
     # how age is distributed amongst our users.

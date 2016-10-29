@@ -44,6 +44,7 @@ class DataObject(object):
         plotter.ratings_per('age')
         plotter.ratings_per('userID')
         plotter.ratings_per('itemID')
+        plotter.num_of_movies_per_genre()
 
     def top_rated(self, N=25):
         pass

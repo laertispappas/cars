@@ -34,9 +34,10 @@ class InfoGainRecommender(ContextRecommender):
             precision_metrics[user] = metric
 
         plotter = Plotter(precision_metrics)
-        plotter.plot_precision_bar(type='precision')
-        plotter.plot_precision_bar(type='recall')
-        plotter.plot_precision_recall_curves()
+        # plotter.plot_precision_bar(type='precision')
+        # plotter.plot_precision_bar(type='recall')
+        plotter.plot_num_of_recommendations()
+        # plotter.plot_precision_recall_curves()
 
     def evaluate(self, user):
         metrics = {}
@@ -70,6 +71,8 @@ class InfoGainRecommender(ContextRecommender):
         metrics['precision'] = (precision_train, precision_test)
         metrics['recall'] = (recall_train, recall_test)
         metrics['f1score'] = (fscore_train, fscore_test)
+        metrics['total_recs'] = len(recs)
+        metrics['total_ctx_recs'] = len(filter_recs)
         return metrics
 
     # Returns top N context aware recommendations for the given user.
