@@ -1,7 +1,8 @@
 import scipy as sc
 import pylab as pl
 import itertools as it
-
+import numpy as np
+import matplotlib.pyplot as plt
 
 def fmeasure(p, r):
     """ Calculates the fmeasure for precision p and recall r. """
@@ -88,3 +89,28 @@ class Plotter(object):
         plotPrecisionRecallDiagram(fig_label, precision_recalls, self.user_labels)
         pl.savefig(file_name, dpi=300)
         pl.show()
+
+    def plot_precision_bar(self, type='precision'):
+        precisions = []
+        ctx_precisions = []
+        for user in self.metrics.keys():
+            precisions.append(self.metrics[user][type][0])
+            ctx_precisions.append(self.metrics[user][type][1])
+
+        N = len(precisions)
+        ind = np.arange(N)  # the x locations for total precision bars
+        width = 0.35  # the width of the bars
+
+        fig, ax = plt.subplots()
+        rects1 = ax.bar(ind, precisions, width, color='r')
+
+        rects2 = ax.bar(ind + width, ctx_precisions, width, color='y')
+
+        # add some text for labels, title and axes ticks
+        ax.set_ylabel(type)
+        ax.set_xlabel('users')
+        ax.set_xticks(ind + width)
+        ax.set_xticklabels(self.user_labels)
+
+        ax.legend((rects1[0], rects2[0]), ('Simple Recommendation', 'Contextual Recommendation'))
+        plt.show()

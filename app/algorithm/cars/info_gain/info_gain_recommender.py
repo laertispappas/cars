@@ -28,12 +28,13 @@ class InfoGainRecommender(ContextRecommender):
 
     def generate_graphs(self):
         gain_user_ids = self.userprofile.keys()
-        metrics = {}
+        precision_metrics = {}
         for user in gain_user_ids:
-            evaluation_metrics = self.evaluate(user)
-            metrics[user] = evaluation_metrics
+            metric = self.evaluate(user)
+            precision_metrics[user] = metric
 
-        plotter = Plotter(metrics)
+        plotter = Plotter(precision_metrics)
+        plotter.plot_precision_bar()
         plotter.plot_precision_recall_curves()
 
     def evaluate(self, user):

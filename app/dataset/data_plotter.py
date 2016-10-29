@@ -13,7 +13,7 @@ class DataPlotter(object):
         self.movies = data_object.movies
 
     def ratings_per(self, type):
-        ax1 = self.ratings[type].value_counts(sort=False).plot(kind='bar')
+        ax1 = self.ratings[type].value_counts(sort=False).plot(kind='bar', xticks=[])
         ax1.set_xlabel(type)
         ax1.set_ylabel('ratings')
         ax1.set_title('Total Ratings per ' + type)
