@@ -34,10 +34,10 @@ class InfoGainRecommender(ContextRecommender):
             precision_metrics[user] = metric
 
         plotter = Plotter(precision_metrics)
-        # plotter.plot_precision_bar(type='precision')
-        # plotter.plot_precision_bar(type='recall')
+        plotter.plot_precision_bar(type='precision')
+        plotter.plot_precision_bar(type='recall')
         plotter.plot_num_of_recommendations()
-        # plotter.plot_precision_recall_curves()
+        plotter.plot_precision_recall_curves()
 
     def evaluate(self, user):
         metrics = {}
