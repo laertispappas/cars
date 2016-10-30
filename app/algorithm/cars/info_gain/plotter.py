@@ -93,7 +93,10 @@ class Plotter(object):
     def plot_precision_bar(self, type='precision'):
         precisions = []
         ctx_precisions = []
-        for user in self.metrics.keys():
+
+        users_ids = self.metrics.keys()
+        users_ids.sort()
+        for user in users_ids:
             precisions.append(self.metrics[user][type][0])
             ctx_precisions.append(self.metrics[user][type][1])
 
@@ -110,7 +113,7 @@ class Plotter(object):
         ax.set_ylabel(type)
         ax.set_xlabel('users')
         ax.set_xticks(ind + width)
-        ax.set_xticklabels(self.user_labels)
+        ax.set_xticklabels(users_ids)
 
         ax.legend((rects1[0], rects2[0]), ('Simple Recommendation', 'Contextual Recommendation'))
         plt.show()
