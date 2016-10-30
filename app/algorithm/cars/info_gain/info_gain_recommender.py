@@ -174,18 +174,30 @@ class InfoGainRecommender(ContextRecommender):
             if rating >= OPTIMUM:
                 for context, filter_ctx_value in filters:
                     if context in profiles[user]:
-                        avg = float(self.__find_max_context(movie, context, udb))
-                        if avg == filter_ctx_value and (rating, movie) not in filtered_recs:
+                        max_ctx_value = float(self.__find_max_context(movie, context, udb))
+                        if max_ctx_value == filter_ctx_value and (rating, movie) not in filtered_recs:
                             filtered_recs.append((rating, movie))
         return filtered_recs
 
     def __find_max_context(self, movie, context, udb):
+        """
+        finds the maximum repeating context for a high rating movie, over all users
+        :param movie:
+        :param context:
+        :param udb:
+        :return: Maximum repearing context if found else -1
+        """
         list_context = []
+        # For each user
         for user in udb:
+            # If the current user has rated the movie and the rating is greater that OPTIMUM
             if movie in udb[user] and udb[user][movie][RATING] >= OPTIMUM:
+                # Get the context value where the user has rated this movie
+                # and append it to list_context.
                 filter_ctx_value = udb[user][movie][context]
                 if type(filter_ctx_value) == numpy.float64:
                     list_context.append(udb[user][movie][context])
+        # Get the maximum context value found
         if len(list_context) > 1:
             m = max(list_context)
         else:
