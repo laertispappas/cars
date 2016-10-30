@@ -124,9 +124,9 @@ class Plotter(object):
             recs.append(self.metrics[user]['total_recs'])
             ctx_recs.append(self.metrics[user]['total_ctx_recs'])
 
-
         plt.plot(user_ids, recs, '-b', label='Simple Recommendations')
         plt.plot(user_ids, ctx_recs, '-r', label='Contextual Recommendations')
+        pl.title('Number of Recommendations per user')
         plt.legend(loc='upper left')
         plt.plot(user_ids, recs)
         plt.show()
