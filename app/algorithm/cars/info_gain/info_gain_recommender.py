@@ -11,11 +11,11 @@ import numpy
 
 import os
 
-from app.utils.similarities import sim_euclidean
+from app.utils.similarities import sim_euclidean, sim_pearson
 
 RATING = 0 # Holds the index of rating in user preference array
 OPTIMUM = 3.5 # Optimum rating for recommendation > 3.5
-VERBOSE = False
+VERBOSE = True
 
 class InfoGainRecommender(ContextRecommender):
     def __init__(self, data_object):
@@ -89,7 +89,7 @@ class InfoGainRecommender(ContextRecommender):
     # Gets recommendations for a person by using a weighted average
     # of every other user's rankings User based CF
     #
-    def __user_cf_recs(self, prefs, person, similarity=sim_euclidean):
+    def __user_cf_recs(self, prefs, person, similarity=sim_pearson):
         totals = {}
         simSum = {}
         for other in prefs:
