@@ -1,3 +1,5 @@
+from collections import Counter
+
 from app.algorithm.cars.context_recommender import ContextRecommender
 from app.algorithm.cars.info_gain.plotter import Plotter
 from app.dataset.data_object import DataObject
@@ -175,6 +177,9 @@ class InfoGainRecommender(ContextRecommender):
                 for context, filter_ctx_value in filters:
                     if context in profiles[user]:
                         max_ctx_value = float(self.__find_max_context(movie, context, udb))
+                        # Filter recommendations based on the maximum context condition provided for this movie
+                        # from all other users. If the condition is not the same as the filtered on.
+                        # we will reject the movie.
                         if max_ctx_value == filter_ctx_value and (rating, movie) not in filtered_recs:
                             filtered_recs.append((rating, movie))
         return filtered_recs
@@ -192,14 +197,14 @@ class InfoGainRecommender(ContextRecommender):
         for user in udb:
             # If the current user has rated the movie and the rating is greater that OPTIMUM
             if movie in udb[user] and udb[user][movie][RATING] >= OPTIMUM:
-                # Get the context value where the user has rated this movie
+                # Get the context value where the current user has rated this movie
                 # and append it to list_context.
                 filter_ctx_value = udb[user][movie][context]
                 if type(filter_ctx_value) == numpy.float64:
                     list_context.append(udb[user][movie][context])
         # Get the maximum context value found
         if len(list_context) > 1:
-            m = max(list_context)
+            m = max(k for k, v in Counter(list_context).items())
         else:
             m = -1
         return m
