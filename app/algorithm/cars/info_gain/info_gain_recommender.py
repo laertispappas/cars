@@ -16,7 +16,7 @@ from app.utils.similarities import sim_euclidean, sim_pearson
 RATING = 0 # Holds the index of rating in user preference array
 OPTIMUM = 3.5 # Optimum rating for recommendation > 3.5
 VERBOSE = True
-TOP_N_EVALUATION = 500
+TOP_N = 500
 
 class InfoGainRecommender(ContextRecommender):
     def __init__(self, data_object):
@@ -49,7 +49,7 @@ class InfoGainRecommender(ContextRecommender):
         recs = self.__user_cf_recs(train_udb, user)
 
         precision_train = precision(user, recs[0:100], test_udb, self.dao.users)
-        recall_train = recall(user, recs, test_udb)
+        recall_train = recall(user, recs[0:100], test_udb)
         fscore_train = f1score(precision_train, recall_train)
 
         if VERBOSE:
@@ -62,7 +62,7 @@ class InfoGainRecommender(ContextRecommender):
         filter_recs = self.__contextual_filter(self.dao.users, self.userprofile, user, recs, self.filters)
 
         precision_test = precision(user, filter_recs[0:100], test_udb, self.dao.users)
-        recall_test = recall(user, filter_recs, test_udb)
+        recall_test = recall(user, filter_recs[0:100], test_udb)
         fscore_test = f1score(precision_test, recall_test)
         if VERBOSE:
             print precision_test, recall_test, f1score(precision_test, recall_test), len(filter_recs)
@@ -87,10 +87,61 @@ class InfoGainRecommender(ContextRecommender):
         filter_recs = self.__contextual_filter(self.dao.users, self.userprofile, user, recs, self.filters)
         return filter_recs[1:N]
 
+    def getPredictedRating(self, prefs, user, item, nearestNeighbors):
+        if item in prefs[user].keys():
+            return prefs[user][item]
+
+        movie_ratings = []
+        for movie_details in prefs[user].values():
+            movie_ratings.append(movie_details[RATING])
+        meanRating = numpy.mean(movie_ratings)
+
+        weightedSum = 0
+        normalizingFactor = 0
+        for neighbor, similarity in nearestNeighbors.items():
+            if item not in prefs[neighbor]:
+                continue
+            neighborsRatings = []
+            for movie_details in prefs[neighbor].values():
+                neighborsRatings.append(movie_details[RATING])
+            meanRatingOfNeighbor = numpy.mean(neighborsRatings)
+
+            weightedSum += similarity * (prefs[neighbor][item][RATING] - meanRatingOfNeighbor)
+            normalizingFactor += numpy.abs(similarity)
+        if normalizingFactor == 0:
+            return 0
+        return meanRating + (weightedSum / normalizingFactor)
+
+    def __user_cf_recs(self, prefs, user, similarity=sim_pearson, nNeighbors = 50):
+        predictedScores = []
+        similarities = self.getNearestNeighbors(prefs, user, similarity)
+        for item in self.dao.movies.keys():
+            if item in prefs[user]:
+                continue
+            itemRaters = {}  # Nearest neighbors who rated on the item
+            for similarity, neighbor in similarities:
+                if similarity <= 0 or len(itemRaters) == nNeighbors:
+                    break
+                if item in prefs[neighbor]:
+                    itemRaters[neighbor] = similarity
+            predicted_rating = self.getPredictedRating(prefs, user, item, itemRaters)
+            predictedScores.append((predicted_rating, item))
+        predictedScores.sort(reverse=True)
+
+        return predictedScores[0:TOP_N]
+
+    def getNearestNeighbors(self, prefs, target, simMeasure, nNeighbors=None):
+        # sim = similarity(prefs, person, other)
+        similarities = [(simMeasure(prefs, target, other), other) for other in prefs if target != other]
+        similarities.sort(reverse=True)
+        if nNeighbors != None:
+            similarities = similarities[0:nNeighbors]
+        return similarities  # similarities = [(similarity, neighbor), ...]
+
     # Gets recommendations for a person by using a weighted average
     # of every other user's rankings User based CF
     #
-    def __user_cf_recs(self, prefs, person, similarity=sim_pearson):
+    def __user_cf_recsOld(self, prefs, person, similarity=sim_pearson):
         totals = {}
         simSum = {}
         for other in prefs:
@@ -109,7 +160,7 @@ class InfoGainRecommender(ContextRecommender):
         rankings.sort()
         best_ranking = [(rating, item) for rating, item in rankings if rating >= OPTIMUM]
         best_ranking.reverse()
-        return best_ranking[0:TOP_N_EVALUATION]
+        return best_ranking[0:TOP_N]
 
     # TODO Add Item Based CF
 
@@ -184,7 +235,7 @@ class InfoGainRecommender(ContextRecommender):
                         # we will reject the movie.
                         if max_ctx_value == filter_ctx_value and (rating, movie) not in filtered_recs:
                             filtered_recs.append((rating, movie))
-        return filtered_recs[0:TOP_N_EVALUATION]
+        return filtered_recs[0:TOP_N]
 
     def __find_max_context(self, movie, context, udb):
         """
