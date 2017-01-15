@@ -4,7 +4,7 @@ from app.algorithm.cars.context_recommender import ContextRecommender
 from app.algorithm.cars.info_gain.plotter import Plotter
 from app.dataset.data_object import DataObject
 from app.dataset.loader import AutoVivification
-from app.algorithm.cars.info_gain.evaluation import precision
+from app.algorithm.cars.info_gain.evaluation import precision, KFold
 from app.algorithm.cars.info_gain.evaluation import recall
 from app.algorithm.cars.info_gain.evaluation import f1score
 import numpy
@@ -16,7 +16,7 @@ from app.utils.similarities import sim_euclidean, sim_pearson
 RATING = 0 # Holds the index of rating in user preference array
 OPTIMUM = 3.5 # Optimum rating for recommendation > 3.5
 VERBOSE = True
-TOP_N = 500
+TOP_N = 150
 
 class InfoGainRecommender(ContextRecommender):
     def __init__(self, data_object):
@@ -42,8 +42,21 @@ class InfoGainRecommender(ContextRecommender):
         plotter.plot_num_of_recommendations()
         plotter.plot_precision_recall_curves()
 
+    def TraditionalRecommendation(self, data, user, simMeasure=sim_pearson, nNeighbors=None, topN=10):
+        return self.__user_cf_recs(data, user, simMeasure, nNeighbors, topN)
+    def PostFilteringRecommendation(self, data, user, simMeasure=sim_pearson, nNeighbors=None, topN=10):
+        recs = self.__user_cf_recs(data, user, simMeasure, nNeighbors, topN)
+        return self.__contextual_filter(data, self.userprofile, user, recs, self.filters, topN)
+
+
+    # TODO add load data method and stop passing train set all over the place
     def evaluate(self, user):
         metrics = {}
+
+        # kfold evluation
+        KFold(self.dao.users, self)
+        exit()
+        #
 
         train_udb, test_udb = self.__remove_for_testing(self.dao.users, user)
         recs = self.__user_cf_recs(train_udb, user)
@@ -112,7 +125,7 @@ class InfoGainRecommender(ContextRecommender):
             return 0
         return meanRating + (weightedSum / normalizingFactor)
 
-    def __user_cf_recs(self, prefs, user, similarity=sim_pearson, nNeighbors = 50):
+    def __user_cf_recs(self, prefs, user, similarity=sim_pearson, nNeighbors = 50, topN=10):
         predictedScores = []
         similarities = self.getNearestNeighbors(prefs, user, similarity)
         for item in self.dao.movies.keys():
@@ -128,7 +141,7 @@ class InfoGainRecommender(ContextRecommender):
             predictedScores.append((predicted_rating, item))
         predictedScores.sort(reverse=True)
 
-        return predictedScores[0:TOP_N]
+        return predictedScores[0:topN]
 
     def getNearestNeighbors(self, prefs, target, simMeasure, nNeighbors=None):
         # sim = similarity(prefs, person, other)
@@ -223,7 +236,7 @@ class InfoGainRecommender(ContextRecommender):
         User post filtered recommendations
             => [(rating, movie), ...]
     """
-    def __contextual_filter(self, udb, profiles, user, recommendations, filters):
+    def __contextual_filter(self, udb, profiles, user, recommendations, filters, topN=10):
         filtered_recs = []
         for rating, movie in recommendations:
             if rating >= OPTIMUM:
@@ -235,7 +248,7 @@ class InfoGainRecommender(ContextRecommender):
                         # we will reject the movie.
                         if max_ctx_value == filter_ctx_value and (rating, movie) not in filtered_recs:
                             filtered_recs.append((rating, movie))
-        return filtered_recs[0:TOP_N]
+        return filtered_recs[0:topN]
 
     def __find_max_context(self, movie, context, udb):
         """

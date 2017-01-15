@@ -1,5 +1,10 @@
+from app.utils.similarities import sim_pearson
+
 RATING = 0 # Holds the index of rating in user preference array
 OPTIMUM = 3.5 # Optimum rating for recommendation > 3.5
+
+from copy import deepcopy
+from datetime import datetime
 
 """
 TBD: broad classes of prediction accuracy measures; measuring
@@ -26,6 +31,95 @@ Ranking Measures
 
 """
 
+# TODO: Clean up code
+def evaluateRecommender(testSet, trainSet, recommender, simMeasure=None, nNeighbors=None, topN=None):
+    # Evaluation metrics
+    topN = 100
+    totalPrecision = 0
+    totalRecall = 0
+    totalF1score = 0
+    totalHit = 0
+
+    users_with_profiles =  [15.0, 21.0, 25.0, 26.0, 31.0, 33.0, 35.0, 50.0, 55.0, 61.0]
+    for user in users_with_profiles:
+        # TraditionalRecommendation
+        # PostFilteringRecommendation
+        recommendation = recommender.TraditionalRecommendation(trainSet, user, simMeasure, nNeighbors, 9999)[0:topN]
+        hit = 0
+        for item in testSet[user].keys():
+            for rating, recommended_item in recommendation:
+                if recommended_item == item:
+                    hit += 1
+                    break
+        precision = float(hit) / float(topN)
+
+        recall = float(hit) / (len(testSet[user].keys()))
+        f1score = 0 if hit == 0 or precision + recall == 0 else float(2 * precision * recall / (precision + recall))
+        # print "F1Score for user: ", user, "score: ", f1score
+
+        totalPrecision += precision
+        totalRecall += recall
+        totalF1score += f1score
+        totalHit += hit
+
+    result = {}
+    result["Precision"] = float(totalPrecision / (len(testSet)))
+    result["Recall"] = float(totalRecall / len(testSet))
+    result["F1-score"] = float(totalF1score / len(testSet))
+    result["Hit-rate"] = float(totalHit) / len(testSet)
+    return result
+
+
+def KFoldSplit(data, fold, nFolds):  # fold: 0~4 when 5-Fold validation
+    trainSet = deepcopy(data)  # data = {user: {item: rating, ...}, ...}
+    testSet = {}
+    for user in data:
+        testSet.setdefault(user, {})
+        unitLength = int(len(data[user].keys()) / nFolds)  # data[user] = {item: rating, ...}
+        lowerbound = unitLength * fold
+        upperbound = unitLength * (fold + 1) if fold < nFolds - 1 else len(data[user])
+        testItems = {}
+        for i, item in enumerate(data[user].keys()):
+            if lowerbound <= i and i < upperbound:
+                testItems[item] = trainSet[user][item]
+                # delete the item from the training set
+                del (trainSet[user][item])
+        testSet[user] = testItems
+    return trainSet, testSet
+
+
+def KFold(data, recommender, simMeasure=sim_pearson, nNeighbors=None, topN=10, nFolds=4):
+    start_time = datetime.now()
+
+    # Evaluation metrics
+    totalPrecision = 0
+    totalRecall = 0
+    totalF1score = 0
+    totalHitrate = 0
+
+    for fold in range(nFolds):
+        trainSet, testSet = KFoldSplit(data, fold, nFolds)
+        # recommender.loadData(trainSet)
+        evaluation = evaluateRecommender(testSet, trainSet, recommender, simMeasure=simMeasure, nNeighbors=nNeighbors, topN=topN)
+
+        totalPrecision += evaluation["Precision"]
+        totalRecall += evaluation["Recall"]
+        totalF1score += evaluation["F1-score"]
+        totalHitrate += evaluation["Hit-rate"]
+
+        # del (trainSet)
+        # del (testSet)
+
+    # Find final results
+    result = {}
+    result["Precision"] = totalPrecision / nFolds
+    result["Recall"] = totalRecall / nFolds
+    result["F1-score"] = totalF1score / nFolds
+    result["Hit-rate"] = float(totalHitrate) / nFolds
+
+    print("Execution time: {}".format(datetime.now() - start_time))
+    print result
+    return result
 
 def precision(user, recommendations, udb, all_udb):
     """
@@ -47,12 +141,6 @@ def precision(user, recommendations, udb, all_udb):
                 break
         if rec_movie not in udb[user].keys():
             fp += 1
-
-    print "User: ", user
-    print "\t**TP, all***"
-    print "\t", tp, ",", all
-    print "\t**End TP, all***"
-    print "\t fp= ", fp
     return tp/float(tp + fp + 0.00000000000000000001)
 
 def recall(user, recommendations, udb):
@@ -83,10 +171,6 @@ def recall(user, recommendations, udb):
                     break
             if not found:
                 fn += 1
-
-    print "**\ttp, fn***"
-    print "\t", tp, fn
-    print "**\tEnd Recall***"
     return tp/float(tp + fn)
 
 def f1score(precision, recall):
