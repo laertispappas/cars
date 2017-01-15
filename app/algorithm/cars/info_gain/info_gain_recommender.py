@@ -16,6 +16,7 @@ from app.utils.similarities import sim_euclidean, sim_pearson
 RATING = 0 # Holds the index of rating in user preference array
 OPTIMUM = 3.5 # Optimum rating for recommendation > 3.5
 VERBOSE = True
+TOP_N_EVALUATION = 500
 
 class InfoGainRecommender(ContextRecommender):
     def __init__(self, data_object):
@@ -47,7 +48,7 @@ class InfoGainRecommender(ContextRecommender):
         train_udb, test_udb = self.__remove_for_testing(self.dao.users, user)
         recs = self.__user_cf_recs(train_udb, user)
 
-        precision_train = precision(user, recs, test_udb)
+        precision_train = precision(user, recs[0:100], test_udb, self.dao.users)
         recall_train = recall(user, recs, test_udb)
         fscore_train = f1score(precision_train, recall_train)
 
@@ -60,7 +61,7 @@ class InfoGainRecommender(ContextRecommender):
 
         filter_recs = self.__contextual_filter(self.dao.users, self.userprofile, user, recs, self.filters)
 
-        precision_test = precision(user, filter_recs, test_udb)
+        precision_test = precision(user, filter_recs[0:100], test_udb, self.dao.users)
         recall_test = recall(user, filter_recs, test_udb)
         fscore_test = f1score(precision_test, recall_test)
         if VERBOSE:
@@ -97,7 +98,7 @@ class InfoGainRecommender(ContextRecommender):
             sim = similarity(prefs, person, other)
             if sim <= 0: continue
             for item in prefs[other]:
-                if item not in prefs[person] or prefs[person][item][RATING] == 0:
+                if item not in prefs[person] or prefs[person][item][RATING] >= 0:
                     totals.setdefault(item, 0)
                     totals[item] += prefs[other][item][RATING] * sim
                     # Similarity sums
@@ -106,8 +107,9 @@ class InfoGainRecommender(ContextRecommender):
         rankings = [(total / simSum[item], item) for item, total in totals.items()]
         # Testing: Checking if ratings match with that in dataset
         rankings.sort()
-        rankings.reverse()
-        return rankings
+        best_ranking = [(rating, item) for rating, item in rankings if rating >= OPTIMUM]
+        best_ranking.reverse()
+        return best_ranking[0:TOP_N_EVALUATION]
 
     # TODO Add Item Based CF
 
@@ -182,7 +184,7 @@ class InfoGainRecommender(ContextRecommender):
                         # we will reject the movie.
                         if max_ctx_value == filter_ctx_value and (rating, movie) not in filtered_recs:
                             filtered_recs.append((rating, movie))
-        return filtered_recs
+        return filtered_recs[0:TOP_N_EVALUATION]
 
     def __find_max_context(self, movie, context, udb):
         """

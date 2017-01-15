@@ -8,5 +8,3 @@
 50,endEmo,dominantEmo,social,weather,season,decision,time,mood,physical,location,daytype,interaction
 55,endEmo,dominantEmo,interaction,daytype,season,weather,time,decision,social,location,mood
 61,endEmo,dominantEmo,weather,social,season,mood,interaction,daytype,time,location,physical,decision
-75,dominantEmo,endEmo,time,daytype,mood,interaction,season,weather
-193,location,time,weather,social,daytype,interaction,mood,season,physical,dominantEmo,endEmo
