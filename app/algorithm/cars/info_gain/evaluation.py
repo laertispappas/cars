@@ -42,8 +42,9 @@ def precision(user, recommendations, udb, all_udb):
     fp = 0
     for (rec_rating, rec_movie) in recommendations:
         for movie in udb[user].keys():
-            if movie == rec_movie and (round(rec_rating) - 1 <= udb[user][movie][RATING] <= round(rec_rating) + 1):
+            if movie == rec_movie and udb[user][movie][RATING] >= OPTIMUM:
                 tp += 1
+                break
         if rec_movie not in udb[user].keys():
             fp += 1
 
@@ -56,9 +57,9 @@ def precision(user, recommendations, udb, all_udb):
 
 def recall(user, recommendations, udb):
     """
-    :param user:
-    :param recommendations:
-    :param udb:
+    :param user: Target user
+    :param recommendations: recommendation list generated for target user
+    :param udb: test dataset
     :return:
 
 
@@ -68,18 +69,25 @@ def recall(user, recommendations, udb):
         #fn => Not recommended but Used
     """
     tp = 0
+    fn = 0
     good_movies = 0
+
     for movie in udb[user].keys():
-        if OPTIMUM + 1 >= udb[user][movie][RATING] >= OPTIMUM - 1:
+        if udb[user][movie][RATING] >= OPTIMUM:
             good_movies += 1
+            found = False
             for (x, y) in recommendations:
                 if movie == y:
                     tp += 1
+                    found = True
+                    break
+            if not found:
+                fn += 1
 
-    print "**\tTP, good movies***"
-    print "\t", tp, good_movies
-    print "**\tEnd TP, good movies***"
-    return tp/float(good_movies)
+    print "**\ttp, fn***"
+    print "\t", tp, fn
+    print "**\tEnd Recall***"
+    return tp/float(tp + fn)
 
 def f1score(precision, recall):
     if precision + recall == 0:
