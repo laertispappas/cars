@@ -11,10 +11,9 @@ def main():
 
     recommender = InfoGainRecommender(data_object)
     recommender.run()
-    # recommender.test_user_cf2(61)
-    # recommender.generate_graphs()
-    recommender.evaluate(33)
-    # print "next\n"
+    recommender.generate_graphs()
+    recommender.evaluate(61)
+    print "next\n"
     # recommender.evaluate(55)
     # print "next\n"
     # recommender.evaluate(33)

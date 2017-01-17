@@ -6,9 +6,6 @@ class BaseRecommender(object):
         self.init_model()
         self.build_model()
 
-        # TODO: Add evaluation logic here
-        # ...
-
     """
     Method
     ---------

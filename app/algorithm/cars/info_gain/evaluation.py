@@ -31,10 +31,9 @@ Ranking Measures
 
 """
 
-# TODO: Clean up code
 def evaluateRecommender(testSet, trainSet, recommender, simMeasure=None, nNeighbors=None, topN=None):
+    recommender.set_training_set(trainSet)
     # Evaluation metrics
-    topN = 100
     totalPrecision = 0
     totalRecall = 0
     totalF1score = 0
@@ -44,7 +43,7 @@ def evaluateRecommender(testSet, trainSet, recommender, simMeasure=None, nNeighb
     for user in users_with_profiles:
         # TraditionalRecommendation
         # PostFilteringRecommendation
-        recommendation = recommender.TraditionalRecommendation(trainSet, user, simMeasure, nNeighbors, 9999)[0:topN]
+        recommendation = recommender.PostFilteringRecommendation(user, simMeasure, nNeighbors, topN)
         hit = 0
         for item in testSet[user].keys():
             for rating, recommended_item in recommendation:
@@ -89,7 +88,7 @@ def KFoldSplit(data, fold, nFolds):  # fold: 0~4 when 5-Fold validation
     return trainSet, testSet
 
 
-def KFold(data, recommender, simMeasure=sim_pearson, nNeighbors=None, topN=10, nFolds=4):
+def KFold(data, recommender, simMeasure=sim_pearson, nNeighbors=40, topN=100, nFolds=4):
     start_time = datetime.now()
 
     # Evaluation metrics
@@ -100,9 +99,8 @@ def KFold(data, recommender, simMeasure=sim_pearson, nNeighbors=None, topN=10, n
 
     for fold in range(nFolds):
         trainSet, testSet = KFoldSplit(data, fold, nFolds)
-        # recommender.loadData(trainSet)
-        evaluation = evaluateRecommender(testSet, trainSet, recommender, simMeasure=simMeasure, nNeighbors=nNeighbors, topN=topN)
 
+        evaluation = evaluateRecommender(testSet, trainSet, recommender, simMeasure=simMeasure, nNeighbors=nNeighbors, topN=topN)
         totalPrecision += evaluation["Precision"]
         totalRecall += evaluation["Recall"]
         totalF1score += evaluation["F1-score"]
