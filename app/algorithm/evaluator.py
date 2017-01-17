@@ -14,9 +14,11 @@ from datetime import datetime
 # >>> print(result)
 # {'Precision': 0.050980392156862, 'Recall': 0.009698538130460, 'Hit-rate': 0.5098039215686}
 from app.algorithm.cars.info_gain.info_gain_recommender import TOP_N
+from app.dataset.loader import AutoVivification
 
 
 def evaluateRecommender(testSet, recommender, simMeasure=None, nNeighbors=None, model=None, topN=None):
+    result = AutoVivification()
     # Evaluation metrics
     totalPrecision = 0
     totalRecall = 0
@@ -36,7 +38,6 @@ def evaluateRecommender(testSet, recommender, simMeasure=None, nNeighbors=None, 
         totalHit += hit
 
     # Find final results
-    result = {}
     result["Precision"] = totalPrecision / len(testSet)
     result["Recall"] = totalRecall / len(testSet)
     result["F1-score"] = totalF1score / len(testSet)

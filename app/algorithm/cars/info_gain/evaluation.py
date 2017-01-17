@@ -1,3 +1,4 @@
+from app.dataset.loader import AutoVivification
 from app.utils.similarities import sim_pearson
 
 RATING = 0 # Holds the index of rating in user preference array
@@ -5,6 +6,9 @@ OPTIMUM = 3.5 # Optimum rating for recommendation > 3.5
 
 from copy import deepcopy
 from datetime import datetime
+
+import matplotlib.pyplot as plt
+import numpy as np
 
 """
 TBD: broad classes of prediction accuracy measures; measuring
@@ -31,7 +35,9 @@ Ranking Measures
 
 """
 
-def evaluateRecommender(testSet, trainSet, recommender, simMeasure=None, nNeighbors=None, topN=None):
+def evaluateRecommender(testSet, trainSet, recommender, simMeasure=None, nNeighbors=None, topN=None, type='2d'):
+    result = AutoVivification()
+
     recommender.set_training_set(trainSet)
     # Evaluation metrics
     totalPrecision = 0
@@ -43,7 +49,10 @@ def evaluateRecommender(testSet, trainSet, recommender, simMeasure=None, nNeighb
     for user in users_with_profiles:
         # TraditionalRecommendation
         # PostFilteringRecommendation
-        recommendation = recommender.PostFilteringRecommendation(user, simMeasure, nNeighbors, topN)
+        if type == '2d':
+            recommendation = recommender.TraditionalRecommendation(user, simMeasure, nNeighbors, topN)
+        else:
+            recommendation = recommender.PostFilteringRecommendation(user, simMeasure, nNeighbors, topN)
         hit = 0
         for item in testSet[user].keys():
             for rating, recommended_item in recommendation:
@@ -51,9 +60,14 @@ def evaluateRecommender(testSet, trainSet, recommender, simMeasure=None, nNeighb
                     hit += 1
                     break
         precision = float(hit) / float(topN)
-
         recall = float(hit) / (len(testSet[user].keys()))
         f1score = 0 if hit == 0 or precision + recall == 0 else float(2 * precision * recall / (precision + recall))
+
+        result["users"][user]["Precision"] = precision
+        result["users"][user]["Recall"] = recall
+        result["users"][user]["F1-score"] = f1score
+        result["users"][user]["Hit-rate"] = hit
+
         # print "Total recommendatin for user: ", user, "recommendation: ", len(recommendation)
         # print "F1Score for user: ", user, "score: ", f1score
 
@@ -62,7 +76,6 @@ def evaluateRecommender(testSet, trainSet, recommender, simMeasure=None, nNeighb
         totalF1score += f1score
         totalHit += hit
 
-    result = {}
     result["Precision"] = float(totalPrecision / (len(testSet)))
     result["Recall"] = float(totalRecall / len(testSet))
     result["F1-score"] = float(totalF1score / len(testSet))
@@ -89,36 +102,124 @@ def KFoldSplit(data, fold, nFolds):  # fold: 0~4 when 5-Fold validation
 
 
 def KFold(data, recommender, simMeasure=sim_pearson, nNeighbors=40, topN=100, nFolds=4):
+    result = AutoVivification()
     start_time = datetime.now()
 
-    # Evaluation metrics
-    totalPrecision = 0
-    totalRecall = 0
-    totalF1score = 0
-    totalHitrate = 0
+    for type in ['2d', 'ctx']:
+        # Evaluation metrics
+        totalPrecision = 0
+        totalRecall = 0
+        totalF1score = 0
+        totalHitrate = 0
+
+        for fold in range(nFolds):
+            trainSet, testSet = KFoldSplit(data, fold, nFolds)
+
+            evaluation = evaluateRecommender(testSet, trainSet, recommender, simMeasure=simMeasure, nNeighbors=nNeighbors, topN=topN, type=type)
+            result[type][fold] = evaluation["users"] # ctx | 2d: { foldNum:{ userId: { metrics } } }
+            totalPrecision += evaluation["Precision"]
+            totalRecall += evaluation["Recall"]
+            totalF1score += evaluation["F1-score"]
+            totalHitrate += evaluation["Hit-rate"]
+
+            # del (trainSet)
+            # del (testSet)
+        # Find final results
+        result[type]["Precision"] = totalPrecision / nFolds
+        result[type]["Recall"] = totalRecall / nFolds
+        result[type]["F1-score"] = totalF1score / nFolds
+        result[type]["Hit-rate"] = float(totalHitrate) / nFolds
+    print("Execution time: {}".format(datetime.now() - start_time))
+    # print result
+
+    # plot_metrics_bar_for_each_fold(result, nFolds, 'Precision')
+    # plot_metrics_bar_for_each_fold(result, nFolds, 'Recall')
+    # plot_metrics_bar_for_each_fold(result, nFolds, 'F1-score')
+    # plot_metrics_bar_for_each_fold(result, nFolds, 'Hit-rate')
+
+    # plot_avg_metrics_for_all_folds_per_user(result, nFolds, type='Precision')
+    # plot_avg_metrics_for_all_folds_per_user(result, nFolds, type='Recall')
+    plot_avg_metrics_for_all_folds_per_user(result, nFolds, type='F1-score')
+    # plot_avg_metrics_for_all_folds_per_user(result, nFolds, type='Hit-rate')
+    # results_to_json(result)
+
+    return result
+
+
+def results_to_json(data):
+    import json
+    with open('result.json', 'w') as fp:
+        json.dump(data, fp)
+
+def plot_avg_metrics_for_all_folds_per_user(data, nFolds, type='Precision'):
+    users_ids = data['2d'][0].keys()
+    users_ids.sort()
+
+    precisions = AutoVivification()
+    ctx_precisions = AutoVivification()
 
     for fold in range(nFolds):
-        trainSet, testSet = KFoldSplit(data, fold, nFolds)
+        for user in users_ids:
+            precisions.setdefault(user, 0)
+            ctx_precisions.setdefault(user, 0)
+            precisions[user] += data['2d'][fold][user][type]
+            ctx_precisions[user] += data['ctx'][fold][user][type]
 
-        evaluation = evaluateRecommender(testSet, trainSet, recommender, simMeasure=simMeasure, nNeighbors=nNeighbors, topN=topN)
-        totalPrecision += evaluation["Precision"]
-        totalRecall += evaluation["Recall"]
-        totalF1score += evaluation["F1-score"]
-        totalHitrate += evaluation["Hit-rate"]
 
-        # del (trainSet)
-        # del (testSet)
+    N = len(precisions)
+    ind = np.arange(N)  # the x locations for total precision bars
+    width = 0.35  # the width of the bars
 
-    # Find final results
-    result = {}
-    result["Precision"] = totalPrecision / nFolds
-    result["Recall"] = totalRecall / nFolds
-    result["F1-score"] = totalF1score / nFolds
-    result["Hit-rate"] = float(totalHitrate) / nFolds
+    fig, ax = plt.subplots()
+    avg_precision_per_user = []
+    avg__ctx_precision_per_user = []
 
-    print("Execution time: {}".format(datetime.now() - start_time))
-    print result
-    return result
+    for user in users_ids:
+        avg_precision_per_user.append(precisions[user])
+        avg__ctx_precision_per_user.append(ctx_precisions[user])
+
+    rects1 = ax.bar(ind, avg_precision_per_user, width, color='r')
+    rects2 = ax.bar(ind + width, avg__ctx_precision_per_user, width, color='y')
+
+    # add some text for labels, title and axes ticks
+    ax.set_ylabel(type)
+    ax.set_xlabel('users')
+    ax.set_xticks(ind + width)
+    ax.set_xticklabels(users_ids)
+
+    ax.legend((rects1[0], rects2[0]), ('Simple Recommendation ' + '(avg)', 'Contextual Recommendation' + '(avg)'))
+    plt.show()
+
+
+def plot_metrics_bar_for_each_fold(data, nFolds, type='Precision'):
+    users_ids = data['2d'][0].keys()
+    users_ids.sort()
+
+    for fold in range(nFolds):
+        precisions = []
+        ctx_precisions = []
+
+        for user in users_ids:
+            precisions.append(data['2d'][fold][user][type])
+            ctx_precisions.append(data['ctx'][fold][user][type])
+        N = len(precisions)
+        ind = np.arange(N)  # the x locations for total precision bars
+        width = 0.35  # the width of the bars
+
+        fig, ax = plt.subplots()
+        rects1 = ax.bar(ind, precisions, width, color='r')
+
+        rects2 = ax.bar(ind + width, ctx_precisions, width, color='y')
+
+        # add some text for labels, title and axes ticks
+        ax.set_ylabel(type)
+        ax.set_xlabel('users')
+        ax.set_xticks(ind + width)
+        ax.set_xticklabels(users_ids)
+
+        ax.legend((rects1[0], rects2[0]), ('Simple Recommendation ' + '(fold=' + str(fold) + ')' , 'Contextual Recommendation' + '(fold=' + str(fold) + ')'))
+        plt.show()
+
 
 def precision(user, recommendations, udb, all_udb):
     """

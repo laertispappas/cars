@@ -61,9 +61,8 @@ class InfoGainRecommender(ContextRecommender):
     def evaluate(self, user):
         metrics = {}
 
-        # k-fold evaluation
-        # KFold(self.training_data, self)
-        # exit()
+        KFold(self.training_data, self)
+        exit()
         #
 
         train_udb, test_udb = self.__remove_for_testing(self.dao.users, user)
