@@ -127,7 +127,7 @@ class InfoGainRecommender(ContextRecommender):
 
     def __user_cf_recs(self, prefs, user, similarity=sim_pearson, nNeighbors = 50, topN=10):
         predictedScores = []
-        similarities = self.getNearestNeighbors(prefs, user, similarity)
+        similarities = self.getNearestNeighbors(prefs, user, similarity, nNeighbors)
         for item in self.dao.movies.keys():
             if item in prefs[user]:
                 continue

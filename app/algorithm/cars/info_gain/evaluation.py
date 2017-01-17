@@ -55,6 +55,7 @@ def evaluateRecommender(testSet, trainSet, recommender, simMeasure=None, nNeighb
 
         recall = float(hit) / (len(testSet[user].keys()))
         f1score = 0 if hit == 0 or precision + recall == 0 else float(2 * precision * recall / (precision + recall))
+        # print "Total recommendatin for user: ", user, "recommendation: ", len(recommendation)
         # print "F1Score for user: ", user, "score: ", f1score
 
         totalPrecision += precision
