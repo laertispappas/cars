@@ -58,46 +58,8 @@ class InfoGainRecommender(ContextRecommender):
         return self.__contextual_filter(user, recs, topN)[0:topN]
 
 
-    def evaluate(self, user):
-        metrics = {}
-
+    def evaluate(self):
         KFold(self.training_data, self)
-        exit()
-        #
-
-        train_udb, test_udb = self.__remove_for_testing(self.dao.users, user)
-        self.set_training_set(train_udb)
-
-        recs = self.__user_cf_recs(user, topN=99999999999999999)
-        precision_train = precision(user, recs[0:100], test_udb, self.training_data)
-        recall_train = recall(user, recs[0:100], test_udb)
-        fscore_train = f1score(precision_train, recall_train)
-
-        if VERBOSE:
-            print "****************************************************************************************************"
-            print "CF precision: ", precision_train
-            print "CF recall: ", recall_train
-            print "CF f1Score: ", f1score(precision_train, recall_train)
-            print "CF total: ", len(recs)
-
-        filter_recs = self.__contextual_filter(user, recs, topN=100)
-
-        precision_test = precision(user, filter_recs[0:100], test_udb, self.dao.users)
-        recall_test = recall(user, filter_recs[0:100], test_udb)
-        fscore_test = f1score(precision_test, recall_test)
-        if VERBOSE:
-            print precision_test, recall_test, f1score(precision_test, recall_test), len(filter_recs)
-            print "Filtered precision: ", precision_test
-            print "Filtered recall: ", recall_test
-            print "Filtered f1Score: ", f1score(precision_test, recall_test)
-            print "Filtered total: ", len(filter_recs)
-            print "****************************************************************************************************"
-        metrics['precision'] = (precision_train, precision_test)
-        metrics['recall'] = (recall_train, recall_test)
-        metrics['f1score'] = (fscore_train, fscore_test)
-        metrics['total_recs'] = len(recs)
-        metrics['total_ctx_recs'] = len(filter_recs)
-        return metrics
 
     # Returns top N context aware recommendations for the given user.
     #
@@ -220,6 +182,20 @@ class InfoGainRecommender(ContextRecommender):
         User post filtered recommendations
             => [(rating, movie), ...]
     """
+    def __contextual_filterOld(self, user, recommendations, topN=10):
+        filtered_recs = []
+        for rating, movie in recommendations:
+            if rating >= OPTIMUM:
+                for context, filter_ctx_value in self.filters:
+                    if context in self.userprofile[user]:
+                        max_ctx_value = float(self.__find_max_context(movie, context, self.training_data))
+                        # Filter recommendations based on the maximum context condition provided for this movie
+                        # from all other users. If the condition is not the same as the filtered one
+                        # we will reject the movie.
+                        if max_ctx_value == filter_ctx_value and (rating, movie) not in filtered_recs:
+                            filtered_recs.append((rating, movie))
+        return filtered_recs[0:topN]
+
     def __contextual_filter(self, user, recommendations, topN=10):
         filtered_recs = []
         for rating, movie in recommendations:
@@ -228,7 +204,7 @@ class InfoGainRecommender(ContextRecommender):
                     if context in self.userprofile[user]:
                         max_ctx_value = float(self.__find_max_context(movie, context, self.training_data))
                         # Filter recommendations based on the maximum context condition provided for this movie
-                        # from all other users. If the condition is not the same as the filtered on.
+                        # from all other users. If the condition is not the same as the filtered one
                         # we will reject the movie.
                         if max_ctx_value == filter_ctx_value and (rating, movie) not in filtered_recs:
                             filtered_recs.append((rating, movie))
