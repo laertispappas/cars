@@ -196,7 +196,7 @@ class InfoGainRecommender(ContextRecommender):
                             filtered_recs.append((rating, movie))
         return filtered_recs[0:topN]
 
-    def __contextual_filter(self, user, recommendations, topN=10):
+    def __contextual_filterWightedInfoProfile(self, user, recommendations, topN=10):
         filtered_recs = []
         for rating, movie in recommendations:
             if rating >= OPTIMUM:
@@ -208,6 +208,39 @@ class InfoGainRecommender(ContextRecommender):
                         # we will reject the movie.
                         if max_ctx_value == filter_ctx_value and (rating, movie) not in filtered_recs:
                             filtered_recs.append((rating, movie))
+        return filtered_recs[0:topN]
+
+    def __contextual_filter(self, user, recommendations, topN=10):
+        # Relevance of item i for target user u in a particular context c
+        # is approximated by the propability Pc(u,i,c) = |Uu,i,c| / k where k is the number
+        # of neighbors used by kNNand Uu,i,c = { v in N(u)|Rv,i,c != 0} that is the user's neighbor v
+        # in the neighborhood of u, N(u) who have rated / consumed item i in context c. The item relevance
+        # is determined by the threshold value tpc (0.1) that is used to contextualize the ratings as follows:
+        #
+        # F(u,i,c) = F(u,i)       if Pc(u,i,c) >= tpc
+        #          = F(u,i) -0.5  if Pc(u,i,c) < tpc
+        #
+        # where F(u,i) denotes the context-unaware rating prediction by RS and F(u,i,c) denotes
+        # the context-aware rating prediction.
+        #
+        filtered_recs = []
+        nNeighbors = 50
+        similarities = self.getNearestNeighbors(user, sim_pearson, nNeighbors) #[(similarity, neighbor)]
+        tpc = 0.08
+
+        for rating, movie in recommendations:
+            nNeighbors_rated_item_in_same_context = 0
+            for sim, neighbor in similarities:
+                for context, filter_ctx_value in self.filters:
+                    if movie in self.training_data[neighbor] and context in self.training_data[neighbor][movie]:
+                        nNeighbors_rated_item_in_same_context += 1
+            puic = float(nNeighbors_rated_item_in_same_context) / float(nNeighbors)
+            if puic >= tpc:
+                filtered_recs.append((rating, movie))
+            else:
+                filtered_recs.append((rating - 0.25, movie))
+
+        filtered_recs.sort(reverse=True)
         return filtered_recs[0:topN]
 
     def __find_max_context(self, movie, context, udb):
