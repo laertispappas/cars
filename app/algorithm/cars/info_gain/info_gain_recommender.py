@@ -182,35 +182,22 @@ class InfoGainRecommender(ContextRecommender):
         User post filtered recommendations
             => [(rating, movie), ...]
     """
-    def __contextual_filterOld(self, user, recommendations, topN=10):
-        filtered_recs = []
-        for rating, movie in recommendations:
-            if rating >= OPTIMUM:
-                for context, filter_ctx_value in self.filters:
-                    if context in self.userprofile[user]:
-                        max_ctx_value = float(self.__find_max_context(movie, context, self.training_data))
-                        # Filter recommendations based on the maximum context condition provided for this movie
-                        # from all other users. If the condition is not the same as the filtered one
-                        # we will reject the movie.
-                        if max_ctx_value == filter_ctx_value and (rating, movie) not in filtered_recs:
-                            filtered_recs.append((rating, movie))
-        return filtered_recs[0:topN]
-
-    def __contextual_filterWightedInfoProfile(self, user, recommendations, topN=10):
-        filtered_recs = []
-        for rating, movie in recommendations:
-            if rating >= OPTIMUM:
-                for context, filter_ctx_value in self.filters:
-                    if context in self.userprofile[user]:
-                        max_ctx_value = float(self.__find_max_context(movie, context, self.training_data))
-                        # Filter recommendations based on the maximum context condition provided for this movie
-                        # from all other users. If the condition is not the same as the filtered one
-                        # we will reject the movie.
-                        if max_ctx_value == filter_ctx_value and (rating, movie) not in filtered_recs:
-                            filtered_recs.append((rating, movie))
-        return filtered_recs[0:topN]
-
     def __contextual_filter(self, user, recommendations, topN=10):
+        filtered_recs = []
+        for rating, movie in recommendations:
+            if rating >= OPTIMUM:
+                for context, filter_ctx_value in self.filters:
+                    if context in self.userprofile[user]:
+                        max_ctx_value = float(self.__find_max_context(movie, context, self.training_data))
+                        # Filter recommendations based on the maximum context condition provided for this movie
+                        # from all other users. If the condition is not the same as the filtered one
+                        # we will reject the movie.
+                        if max_ctx_value == filter_ctx_value and (rating, movie) not in filtered_recs:
+                            filtered_recs.append((rating, movie))
+        filtered_recs.sort(reverse=True)
+        return filtered_recs[0:topN]
+
+    def __contextual_filterNeighborCtxPropability(self, user, recommendations, topN=10):
         # Relevance of item i for target user u in a particular context c
         # is approximated by the propability Pc(u,i,c) = |Uu,i,c| / k where k is the number
         # of neighbors used by kNNand Uu,i,c = { v in N(u)|Rv,i,c != 0} that is the user's neighbor v
