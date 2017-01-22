@@ -20,7 +20,7 @@ VERBOSE = True
 class InfoGainRecommender(ContextRecommender):
     def __init__(self, data_object):
         super(self.__class__, self).__init__(data_object)
-        self.filters = [(8, 2), (5, 1), (9, 2), (10, 2), (6, 1), (16, 1), (13, 1), (7, 1), (14, 1), (12, 1), (11, 1)]
+        self.filters = [(8, 3), (5, 2), (9, 1), (10, 1), (6, 2), (16, 2), (13, 2), (7, 1), (14, 2), (12, 1), (11, 2)]
 
     def init_model(self):
         self.userprofile = self.__build_user_profile()
