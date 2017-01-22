@@ -45,7 +45,7 @@ def evaluateRecommender(testSet, trainSet, recommender, simMeasure=None, nNeighb
     totalF1score = 0
     totalHit = 0
 
-    users_with_profiles =  [15.0, 21.0, 25.0, 26.0, 31.0, 33.0, 35.0, 50.0, 55.0, 61.0]
+    users_with_profiles =  [15.0, 21.0, 25.0, 26.0, 31.0, 33.0, 35.0, 50.0, 55.0, 61.0, 193.0]
     for user in users_with_profiles:
         # TraditionalRecommendation
         # PostFilteringRecommendation
