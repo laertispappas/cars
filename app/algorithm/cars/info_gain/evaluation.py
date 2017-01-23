@@ -45,10 +45,8 @@ def evaluateRecommender(testSet, trainSet, recommender, simMeasure=None, nNeighb
     totalF1score = 0
     totalHit = 0
 
-    users_with_profiles =  [15.0, 21.0, 25.0, 26.0, 31.0, 33.0, 35.0, 50.0, 55.0, 61.0, 193.0]
-    for user in users_with_profiles:
-        # TraditionalRecommendation
-        # PostFilteringRecommendation
+    # users_with_profiles =  [15.0, 21.0, 25.0, 26.0, 31.0, 33.0, 35.0, 50.0, 55.0, 61.0, 193.0]
+    for user in recommender.userprofile.keys():
         if type == '2d':
             recommendation = recommender.TraditionalRecommendation(user, simMeasure, nNeighbors, topN)
         else:
@@ -60,7 +58,7 @@ def evaluateRecommender(testSet, trainSet, recommender, simMeasure=None, nNeighb
                     hit += 1
                     break
         precision = float(hit) / float(topN)
-        recall = float(hit) / (len(testSet[user].keys()))
+        recall = 0 if len(testSet[user].keys()) == 0 else float(hit) / (len(testSet[user].keys()))
         f1score = 0 if hit == 0 or precision + recall == 0 else float(2 * precision * recall / (precision + recall))
 
         result["users"][user]["Precision"] = precision

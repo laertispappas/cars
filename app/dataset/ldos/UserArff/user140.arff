@@ -1,0 +1,36 @@
+@relation LDOS-CoMoDa
+
+@attribute userID numeric
+@attribute itemID numeric
+@attribute age numeric
+@attribute sex {Male,Female}
+@attribute city numeric
+@attribute country {UK,Denmark,France,US}
+@attribute time {Evening,Afternoon,Night,Morning}
+@attribute daytype {Weekend,Working,Holiday}
+@attribute season {Summer,Autumn,Winter,Spring}
+@attribute location {Home,Public,Friend}
+@attribute weather {Sunny,Rainy,Cloudy,Stormy,Snowy}
+@attribute social {Alone,Partner,Friends,Family,Parents,Public,Colleagues}
+@attribute endEmo {Happy,Sad,Neutral,Surprised,Disgusted,Angry,Scared}
+@attribute dominantEmo {Happy,Scared,Neutral,Sad,Angry,Disgusted,Surprised}
+@attribute mood {Neutral,Positive,Negative}
+@attribute physical {Healthy,Ill}
+@attribute decision {Decision,Given}
+@attribute interaction {First,Nth}
+@attribute director numeric
+@attribute movieCountry numeric
+@attribute movieLanguage numeric
+@attribute movieYear numeric
+@attribute genre1 numeric
+@attribute genre2 numeric
+@attribute genre3 numeric
+@attribute actor1 numeric
+@attribute actor2 numeric
+@attribute actor3 numeric
+@attribute budget numeric
+@attribute rating {1,2,3,4,5}
+
+@data
+140,3859,21,Male,10,Denmark,Evening,Weekend,Summer,Friend,Sunny,Friends,Happy,Happy,Positive,Healthy,Decision,Nth,591,37,9,1999,7,18,-1,847,339,1839,10000000,5
+140,3926,21,Male,10,Denmark,Evening,Weekend,Spring,Home,Sunny,Partner,Happy,Happy,Positive,Healthy,Decision,First,186,37,9,2011,7,18,-1,16,889,419,80000000,5

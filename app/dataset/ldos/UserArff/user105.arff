@@ -1,0 +1,35 @@
+@relation LDOS-CoMoDa
+
+@attribute userID numeric
+@attribute itemID numeric
+@attribute age numeric
+@attribute sex {Male,Female}
+@attribute city numeric
+@attribute country {UK,Denmark,France,US}
+@attribute time {Evening,Afternoon,Night,Morning}
+@attribute daytype {Weekend,Working,Holiday}
+@attribute season {Summer,Autumn,Winter,Spring}
+@attribute location {Home,Public,Friend}
+@attribute weather {Sunny,Rainy,Cloudy,Stormy,Snowy}
+@attribute social {Alone,Partner,Friends,Family,Parents,Public,Colleagues}
+@attribute endEmo {Happy,Sad,Neutral,Surprised,Disgusted,Angry,Scared}
+@attribute dominantEmo {Happy,Scared,Neutral,Sad,Angry,Disgusted,Surprised}
+@attribute mood {Neutral,Positive,Negative}
+@attribute physical {Healthy,Ill}
+@attribute decision {Decision,Given}
+@attribute interaction {First,Nth}
+@attribute director numeric
+@attribute movieCountry numeric
+@attribute movieLanguage numeric
+@attribute movieYear numeric
+@attribute genre1 numeric
+@attribute genre2 numeric
+@attribute genre3 numeric
+@attribute actor1 numeric
+@attribute actor2 numeric
+@attribute actor3 numeric
+@attribute budget numeric
+@attribute rating {1,2,3,4,5}
+
+@data
+105,3598,-1,Male,3,France,Evening,Working,Autumn,Home,Cloudy,Partner,Happy,Neutral,Neutral,Healthy,Given,First,537,37,9,2010,4,3,7,1377,526,263,150000000,4

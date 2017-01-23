@@ -35,19 +35,6 @@ class InfoGainRecommender(ContextRecommender):
         else:
             self.training_data = trainingSet
 
-    def generate_graphs(self):
-        gain_user_ids = self.userprofile.keys()
-        precision_metrics = {}
-        for user in gain_user_ids:
-            metric = self.evaluate(user)
-            precision_metrics[user] = metric
-
-        plotter = Plotter(precision_metrics)
-        plotter.plot_precision_bar(type='precision')
-        plotter.plot_precision_bar(type='recall')
-        plotter.plot_num_of_recommendations()
-        plotter.plot_precision_recall_curves()
-
     # TODO implement on concrete class
     def TraditionalRecommendation(self, user, simMeasure=sim_pearson, nNeighbors=None, topN=10):
         return self.__user_cf_recs(user, simMeasure, nNeighbors, topN)
@@ -67,7 +54,7 @@ class InfoGainRecommender(ContextRecommender):
         recs = self.__user_cf_recs(user)
 
         # Context - Value tuple
-        filter_recs = self.__contextual_filter(user, recs, self.filters, topN=N)
+        filter_recs = self.__contextual_filter(user, recs, topN=N)
         return filter_recs[1:N]
 
     def getPredictedRating(self, user, item, nearestNeighbors):
@@ -182,7 +169,7 @@ class InfoGainRecommender(ContextRecommender):
         User post filtered recommendations
             => [(rating, movie), ...]
     """
-    def __contextual_filter(self, user, recommendations, topN=10):
+    def __contextual_filterA(self, user, recommendations, topN=10):
         filtered_recs = []
         for rating, movie in recommendations:
             if rating >= OPTIMUM:
@@ -197,7 +184,7 @@ class InfoGainRecommender(ContextRecommender):
         filtered_recs.sort(reverse=True)
         return filtered_recs[0:topN]
 
-    def __contextual_filterNeighborCtxPropability(self, user, recommendations, topN=10):
+    def __contextual_filter(self, user, recommendations, topN=10):
         # Relevance of item i for target user u in a particular context c
         # is approximated by the propability Pc(u,i,c) = |Uu,i,c| / k where k is the number
         # of neighbors used by kNNand Uu,i,c = { v in N(u)|Rv,i,c != 0} that is the user's neighbor v
@@ -232,7 +219,7 @@ class InfoGainRecommender(ContextRecommender):
 
     def __find_max_context(self, movie, context, udb):
         """
-        finds the maximum repeating context for a high rating movie, over all users
+        finds the maximum repeating context for a high rated movie, over all users
         :param movie:
         :param context:
         :param udb:

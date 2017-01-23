@@ -11,7 +11,7 @@ def main():
 
     recommender = InfoGainRecommender(data_object)
     recommender.run()
-    # recommender.generate_graphs()
+    # print recommender.top_recommendations(100)
     recommender.evaluate()
 
     # print recommender.top_recommendations(35)
