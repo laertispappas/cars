@@ -99,7 +99,7 @@ def KFoldSplit(data, fold, nFolds):  # fold: 0~4 when 5-Fold validation
     return trainSet, testSet
 
 
-def KFold(data, recommender, simMeasure=sim_pearson, nNeighbors=40, topN=100, nFolds=4):
+def KFold(data, recommender, simMeasure=sim_pearson, nNeighbors=40, topN=100, nFolds=10):
     result = AutoVivification()
     start_time = datetime.now()
 
@@ -137,8 +137,8 @@ def KFold(data, recommender, simMeasure=sim_pearson, nNeighbors=40, topN=100, nF
 
     # plot_avg_metrics_for_all_folds_per_user(result, nFolds, type='Precision')
     # plot_avg_metrics_for_all_folds_per_user(result, nFolds, type='Recall')
-    plot_avg_metrics_for_all_folds_per_user(result, nFolds, type='F1-score')
-    # plot_avg_metrics_for_all_folds_per_user(result, nFolds, type='Hit-rate')
+    # plot_avg_metrics_for_all_folds_per_user(result, nFolds, type='F1-score')
+    plot_avg_metrics_for_all_folds_per_user(result, nFolds, type='Hit-rate')
     # results_to_json(result)
 
     return result
@@ -275,3 +275,18 @@ def f1score(precision, recall):
     if precision + recall == 0:
         return 0
     return 2 * (precision * recall)/(precision + recall)
+
+
+# Given udb datastore return 1/3 as a test dataset and 2/3 as train dataset
+def __remove_for_testing(self, udb, user):
+    limit = int(len(udb[user]) / 3.0)
+    test_udb = AutoVivification()
+    import copy;
+    train_udb, i = copy.deepcopy(udb), 0
+    for movie in udb[user]:
+        test_udb[user][movie] = train_udb[user][movie]
+        del (train_udb[user][movie])
+        i += 1
+        if i > limit: break
+    # print len(train_udb[user]), len(test_udb[user]), len(udb[user])
+    return train_udb, test_udb

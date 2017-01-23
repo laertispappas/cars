@@ -136,19 +136,6 @@ class InfoGainRecommender(ContextRecommender):
                 userprofile[key] = val
         return userprofile
 
-    # Given udb datastore return 1/3 as a test dataset and 2/3 as train dataset
-    def __remove_for_testing(self, udb, user):
-        limit = int(len(udb[user]) / 3.0)
-        test_udb = AutoVivification()
-        import copy;
-        train_udb, i = copy.deepcopy(udb), 0
-        for movie in udb[user]:
-            test_udb[user][movie] = train_udb[user][movie]
-            del (train_udb[user][movie])
-            i += 1
-            if i > limit: break
-        # print len(train_udb[user]), len(test_udb[user]), len(udb[user])
-        return train_udb, test_udb
     """
     Function
     __contextual_filter
