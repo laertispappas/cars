@@ -20,7 +20,8 @@ VERBOSE = True
 class InfoGainRecommender(ContextRecommender):
     def __init__(self, data_object):
         super(self.__class__, self).__init__(data_object)
-        self.filters = [(8, 3), (5, 2), (9, 1), (10, 1), (6, 2), (16, 2), (13, 2), (7, 1), (14, 2), (12, 1), (11, 2)]
+        # self.filters = [(8, 3), (5, 2), (9, 1), (10, 1), (6, 2), (16, 2), (13, 2), (7, 1), (14, 2), (12, 1), (11, 2)]
+        self.filters = [(5,2)]
 
     def init_model(self):
         self.userprofile = self.__build_user_profile()
@@ -44,9 +45,6 @@ class InfoGainRecommender(ContextRecommender):
         recs = self.__user_cf_recs(user, simMeasure, nNeighbors, topN=99999999999)
         return self.__contextual_filter(user, recs, topN)[0:topN]
 
-
-    def evaluate(self):
-        KFold(self.training_data, self)
 
     # Returns top N context aware recommendations for the given user.
     #
@@ -156,7 +154,7 @@ class InfoGainRecommender(ContextRecommender):
         User post filtered recommendations
             => [(rating, movie), ...]
     """
-    def __contextual_filterA(self, user, recommendations, topN=10):
+    def __contextual_filterAAA(self, user, recommendations, topN=10):
         filtered_recs = []
         for rating, movie in recommendations:
             if rating >= OPTIMUM:
@@ -185,21 +183,23 @@ class InfoGainRecommender(ContextRecommender):
         # the context-aware rating prediction.
         #
         filtered_recs = []
-        nNeighbors = 50
+        nNeighbors = 500
         similarities = self.getNearestNeighbors(user, sim_pearson, nNeighbors) #[(similarity, neighbor)]
-        tpc = 0.08
+        tpc = 0.01
 
         for rating, movie in recommendations:
             nNeighbors_rated_item_in_same_context = 0
             for sim, neighbor in similarities:
                 for context, filter_ctx_value in self.filters:
-                    if movie in self.training_data[neighbor] and context in self.training_data[neighbor][movie]:
-                        nNeighbors_rated_item_in_same_context += 1
+                    if movie in self.training_data[neighbor] and context in self.training_data[neighbor][movie] and self.training_data[neighbor][movie][context] == filter_ctx_value:
+                            nNeighbors_rated_item_in_same_context += 5
             puic = float(nNeighbors_rated_item_in_same_context) / float(nNeighbors)
-            if puic >= tpc:
-                filtered_recs.append((rating, movie))
-            else:
-                filtered_recs.append((rating - 0.25, movie))
+            # Weight
+            filtered_recs.append((rating + rating * puic, movie))
+
+            # Filter
+            # if puic >= tpc:
+            #     filtered_recs.append((rating, movie))
 
         filtered_recs.sort(reverse=True)
         return filtered_recs[0:topN]

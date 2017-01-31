@@ -1,3 +1,4 @@
+from app.dataset.data_object import DataObject
 from app.dataset.loader import AutoVivification
 from app.utils.similarities import sim_pearson
 
@@ -9,6 +10,47 @@ from datetime import datetime
 
 import matplotlib.pyplot as plt
 import numpy as np
+
+def evaluateRecommender(testSet, trainSet, recommender, simMeasure=None, nNeighbors=None, topN=None, type='2d'):
+    result = AutoVivification()
+
+    recommender.set_training_set(trainSet)
+    # Evaluation metrics
+    totalPrecision = 0
+    totalRecall = 0
+    totalF1score = 0
+    totalHit = 0
+
+    for user in recommender.dao.users:
+        if type == '2d':
+            recommendation = recommender.TraditionalRecommendation(user, simMeasure, nNeighbors, topN)
+        else:
+            recommendation = recommender.PostFilteringRecommendation(user, simMeasure, nNeighbors, topN)
+        hit = 0
+        for item in testSet[user].keys():
+            for rating, recommended_item in recommendation:
+                if recommended_item == item:
+                    hit += 1
+                    break
+        precision = float(hit) / float(topN)
+        recall = 0 if len(testSet[user].keys()) == 0 else float(hit) / (len(testSet[user].keys()))
+        f1score = 0 if hit == 0 or precision + recall == 0 else float(2 * precision * recall / (precision + recall))
+
+        # result["users"][user]["Precision"] = precision
+        # result["users"][user]["Recall"] = recall
+        # result["users"][user]["F1-score"] = f1score
+        # result["users"][user]["Hit-rate"] = hit
+
+        totalPrecision += precision
+        totalRecall += recall
+        totalF1score += f1score
+        totalHit += hit
+
+    result["Precision"] = float(totalPrecision / (len(testSet)))
+    result["Recall"] = float(totalRecall / len(testSet))
+    result["F1-score"] = float(totalF1score / len(testSet))
+    result["Hit-rate"] = float(totalHit) / len(testSet)
+    return result
 
 """
 TBD: broad classes of prediction accuracy measures; measuring
@@ -35,51 +77,6 @@ Ranking Measures
 
 """
 
-def evaluateRecommender(testSet, trainSet, recommender, simMeasure=None, nNeighbors=None, topN=None, type='2d'):
-    result = AutoVivification()
-
-    recommender.set_training_set(trainSet)
-    # Evaluation metrics
-    totalPrecision = 0
-    totalRecall = 0
-    totalF1score = 0
-    totalHit = 0
-
-    # users_with_profiles =  [15.0, 21.0, 25.0, 26.0, 31.0, 33.0, 35.0, 50.0, 55.0, 61.0, 193.0]
-    for user in recommender.userprofile.keys():
-        if type == '2d':
-            recommendation = recommender.TraditionalRecommendation(user, simMeasure, nNeighbors, topN)
-        else:
-            recommendation = recommender.PostFilteringRecommendation(user, simMeasure, nNeighbors, topN)
-        hit = 0
-        for item in testSet[user].keys():
-            for rating, recommended_item in recommendation:
-                if recommended_item == item:
-                    hit += 1
-                    break
-        precision = float(hit) / float(topN)
-        recall = 0 if len(testSet[user].keys()) == 0 else float(hit) / (len(testSet[user].keys()))
-        f1score = 0 if hit == 0 or precision + recall == 0 else float(2 * precision * recall / (precision + recall))
-
-        result["users"][user]["Precision"] = precision
-        result["users"][user]["Recall"] = recall
-        result["users"][user]["F1-score"] = f1score
-        result["users"][user]["Hit-rate"] = hit
-
-        # print "Total recommendatin for user: ", user, "recommendation: ", len(recommendation)
-        # print "F1Score for user: ", user, "score: ", f1score
-
-        totalPrecision += precision
-        totalRecall += recall
-        totalF1score += f1score
-        totalHit += hit
-
-    result["Precision"] = float(totalPrecision / (len(testSet)))
-    result["Recall"] = float(totalRecall / len(testSet))
-    result["F1-score"] = float(totalF1score / len(testSet))
-    result["Hit-rate"] = float(totalHit) / len(testSet)
-    return result
-
 
 def KFoldSplit(data, fold, nFolds):  # fold: 0~4 when 5-Fold validation
     trainSet = deepcopy(data)  # data = {user: {item: rating, ...}, ...}
@@ -99,7 +96,7 @@ def KFoldSplit(data, fold, nFolds):  # fold: 0~4 when 5-Fold validation
     return trainSet, testSet
 
 
-def KFold(data, recommender, simMeasure=sim_pearson, nNeighbors=40, topN=100, nFolds=10):
+def KFold(data, recommender, simMeasure=sim_pearson, nNeighbors=40, topN=100, nFolds=4):
     result = AutoVivification()
     start_time = datetime.now()
 
@@ -114,7 +111,7 @@ def KFold(data, recommender, simMeasure=sim_pearson, nNeighbors=40, topN=100, nF
             trainSet, testSet = KFoldSplit(data, fold, nFolds)
 
             evaluation = evaluateRecommender(testSet, trainSet, recommender, simMeasure=simMeasure, nNeighbors=nNeighbors, topN=topN, type=type)
-            result[type][fold] = evaluation["users"] # ctx | 2d: { foldNum:{ userId: { metrics } } }
+            # result[type][fold] = evaluation["users"] # ctx | 2d: { foldNum:{ userId: { metrics } } }
             totalPrecision += evaluation["Precision"]
             totalRecall += evaluation["Recall"]
             totalF1score += evaluation["F1-score"]
@@ -138,15 +135,95 @@ def KFold(data, recommender, simMeasure=sim_pearson, nNeighbors=40, topN=100, nF
     # plot_avg_metrics_for_all_folds_per_user(result, nFolds, type='Precision')
     # plot_avg_metrics_for_all_folds_per_user(result, nFolds, type='Recall')
     # plot_avg_metrics_for_all_folds_per_user(result, nFolds, type='F1-score')
-    plot_avg_metrics_for_all_folds_per_user(result, nFolds, type='Hit-rate')
-    # results_to_json(result)
+    # plot_avg_metrics_for_all_folds_per_user(result, nFolds, type='Hit-rate')
+
+    print result['2d']['F1-score']
+    print result['ctx']['F1-score']
+
+    # plot_results(result, type='F1-score')
+
+    filters = recommender.filters
+    context = str(filters[0][0])
+    condition = str(filters[0][1])
+
+    filename = "results_" + context + "__" + condition + ".json"
+    results_to_json(result, filename)
 
     return result
 
 
-def results_to_json(data):
+def evaluate():
+    from app.algorithm.cars.info_gain.info_gain_recommender import InfoGainRecommender
+    # feature_dict = {
+    #     'time': 5,
+    #     'daytype': 6,
+    #     'location': 8,
+    #     'social': 10,
+    #     'endEmo': 11,
+    #     'dominantEmo': 12,
+    #     'mood': 13
+    # }
+    context_conditions = {
+        '10': range(1, 5),
+        '5': range(1, 5), # -1
+        '6': range(1, 4), # -2
+        '7': range(1, 5), # -2
+    }
+    for context in context_conditions.keys():
+        for condition in context_conditions[context]:
+            print context
+            print condition
+            data_object = DataObject()
+            recommender = InfoGainRecommender(data_object)
+            recommender.run()
+            recommender.filters = [(int(context), condition)]
+            KFold(recommender.training_data, recommender)
+
+
+def plot_results(data, type=None):
+    import numpy as np
+    import matplotlib.pyplot as plt
+
+    # data to plot
+    n_groups = 4
+    baseline = (90, 55, 40, 65)
+    context1 = (85, 62, 54, 20)
+    context2 = (100, 105, 154, 120)
+
+    # create plot
+    fig, ax = plt.subplots()
+    index = np.arange(n_groups)
+    bar_width = 0.25
+    opacity = 0.8
+
+    rects1 = plt.bar(index, baseline, bar_width,
+                     alpha=opacity,
+                     color='b',
+                     label='Frank')
+
+    rects2 = plt.bar(index + bar_width, context1, bar_width,
+                     alpha=opacity,
+                     color='g',
+                     label='Guido')
+
+    rects3 = plt.bar(index + bar_width + bar_width, context2, bar_width,
+                     alpha=opacity,
+                     color='r',
+                     label='Me')
+
+    plt.xlabel('Precision')
+    plt.ylabel('Context')
+    plt.title('Scores by person')
+    plt.xticks(index + bar_width, ('A', 'B', 'C', 'D'))
+    plt.legend()
+
+    plt.tight_layout()
+    plt.show()
+    exit()
+
+def results_to_json(data, filename):
     import json
-    with open('result.json', 'w') as fp:
+    with open(filename, 'w') as fp:
         json.dump(data, fp)
 
 def plot_avg_metrics_for_all_folds_per_user(data, nFolds, type='Precision'):
