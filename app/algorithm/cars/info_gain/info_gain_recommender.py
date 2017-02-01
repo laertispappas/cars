@@ -192,16 +192,16 @@ class InfoGainRecommender(ContextRecommender):
             for sim, neighbor in similarities:
                 for context, filter_ctx_value in self.filters:
                     if movie in self.training_data[neighbor] and context in self.training_data[neighbor][movie] and self.training_data[neighbor][movie][context] == filter_ctx_value:
-                            nNeighbors_rated_item_in_same_context += 5
+                            nNeighbors_rated_item_in_same_context += 2.5
             puic = float(nNeighbors_rated_item_in_same_context) / float(nNeighbors)
             # Weight
-            # filtered_recs.append((rating + rating * puic, movie))
+            filtered_recs.append((rating + rating * puic, movie))
 
-            # Filter
-            if puic >= tpc:
-                filtered_recs.append((rating, movie))
-            else:
-                filtered_recs.append((rating - 2.25, movie))
+            # # Filter
+            # if puic >= tpc:
+            #     filtered_recs.append((rating, movie))
+            # else:
+            #     filtered_recs.append((rating - 2.25, movie))
 
         filtered_recs.sort(reverse=True)
         return filtered_recs[0:topN]

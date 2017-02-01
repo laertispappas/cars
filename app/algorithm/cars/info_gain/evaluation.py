@@ -73,6 +73,7 @@ Ranking Measures
     - Normalized Distance based Performance Measure (NDPM)
     - average precision (AP) correlation
     - Utility-Based Ranking
+    - (n)DCG
 
 
 """
@@ -146,7 +147,7 @@ def KFold(data, recommender, simMeasure=sim_pearson, nNeighbors=40, topN=100, nF
     context = str(filters[0][0])
     condition = str(filters[0][1])
 
-    filename = "filter_results_" + context + "__" + condition + ".json"
+    filename = "weight_25_results_" + context + "__" + condition + ".json"
     results_to_json(result, filename)
 
     return result
