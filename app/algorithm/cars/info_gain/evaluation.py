@@ -146,7 +146,7 @@ def KFold(data, recommender, simMeasure=sim_pearson, nNeighbors=40, topN=100, nF
     context = str(filters[0][0])
     condition = str(filters[0][1])
 
-    filename = "results_" + context + "__" + condition + ".json"
+    filename = "wight_results_" + context + "__" + condition + ".json"
     results_to_json(result, filename)
 
     return result
@@ -165,9 +165,10 @@ def evaluate():
     # }
     context_conditions = {
         '10': range(1, 5),
-        '5': range(1, 5), # -1
-        '6': range(1, 4), # -2
-        '7': range(1, 5), # -2
+        '5': range(1, 5),
+        '6': range(1, 4),
+        '7': range(1, 5),
+        '8': range(1, 4),
     }
     for context in context_conditions.keys():
         for condition in context_conditions[context]:

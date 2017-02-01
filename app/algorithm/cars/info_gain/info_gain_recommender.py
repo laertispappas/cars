@@ -183,7 +183,7 @@ class InfoGainRecommender(ContextRecommender):
         # the context-aware rating prediction.
         #
         filtered_recs = []
-        nNeighbors = 500
+        nNeighbors = 50
         similarities = self.getNearestNeighbors(user, sim_pearson, nNeighbors) #[(similarity, neighbor)]
         tpc = 0.01
 
