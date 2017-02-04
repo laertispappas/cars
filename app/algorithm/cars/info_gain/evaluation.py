@@ -147,7 +147,7 @@ def KFold(data, recommender, simMeasure=sim_pearson, nNeighbors=40, topN=10, nFo
     context = str(filters[0][0])
     condition = str(filters[0][1])
 
-    filename = "top10_weight_results_" + context + "__" + condition + ".json"
+    filename = "top10_filter_results_" + context + "__" + condition + ".json"
     results_to_json(result, filename)
 
     return result
