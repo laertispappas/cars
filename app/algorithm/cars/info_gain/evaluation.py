@@ -97,7 +97,7 @@ def KFoldSplit(data, fold, nFolds):  # fold: 0~4 when 5-Fold validation
     return trainSet, testSet
 
 
-def KFold(data, recommender, simMeasure=sim_pearson, nNeighbors=40, topN=100, nFolds=4):
+def KFold(data, recommender, simMeasure=sim_pearson, nNeighbors=40, topN=10, nFolds=4):
     result = AutoVivification()
     start_time = datetime.now()
 
@@ -147,7 +147,7 @@ def KFold(data, recommender, simMeasure=sim_pearson, nNeighbors=40, topN=100, nF
     context = str(filters[0][0])
     condition = str(filters[0][1])
 
-    filename = "weight_25_results_" + context + "__" + condition + ".json"
+    filename = "top10_weight_results_" + context + "__" + condition + ".json"
     results_to_json(result, filename)
 
     return result
@@ -180,6 +180,29 @@ def evaluate():
             recommender.run()
             recommender.filters = [(int(context), condition)]
             KFold(recommender.training_data, recommender)
+
+
+def generate_next_context():
+    context_conditions = {
+        '10': range(1, 5),
+        '5': range(1, 5),
+        '6': range(1, 4),
+        '7': range(1, 5),
+        '8': range(1, 4),
+    }
+
+    def generate_pairs(context_conditions):
+        pairs = []
+        for context in context_conditions.keys():
+            conditions = context_conditions[context]
+            pairs.append((context, conditions))
+        return pairs
+
+    # [(context, [conditions]), (ctx2, [cond2])]
+    pairs = generate_pairs(context_conditions)
+
+    def __f(pairs):
+        pass
 
 
 def plot_results(data, type=None):
