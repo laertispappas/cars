@@ -22,7 +22,7 @@ class InfoGainRecommender(ContextRecommender):
         self.filters = [(5,2)]
 
     def init_model(self):
-        self.userprofile = self.__build_user_profile()
+        pass
 
     def build_model(self):
         # TODO: Remove after code cleanup
@@ -105,33 +105,6 @@ class InfoGainRecommender(ContextRecommender):
             similarities = similarities[0:nNeighbors]
         return similarities  # similarities = [(similarity, neighbor), ...]
 
-
-    # Private Methods
-    """
-    Function
-    ---------------------
-    __build_user_profile
-    ---------------------
-    Returns
-        Builds a dictionary of User Profiles by parsing through the info gain file
-        => {user1: [c1, c2, c5, c6]}
-
-    filename: WEKA output from InfoGainAttributeEval:
-        Evaluates the worth of an attribute by measuring the information gain with respect to the class.
-    """
-    def __build_user_profile(self, filename='InfoGainResults.txt'):
-        dir = os.path.dirname(__file__)
-        src_path = os.path.join(dir, filename)
-
-        userprofile = {}
-        with open(src_path) as f:
-            for line in f:
-                line = line.strip()
-                row = line.split(',')
-                key, val = eval(row[0]), [DataObject.feature_dict[x] for x in row[1:]]
-                userprofile[key] = val
-        return userprofile
-
     def __contextual_filter(self, user, recommendations, topN=10):
         # Relevance of item i for target user u in a particular context c
         # is approximated by the propability Pc(u,i,c) = |Uu,i,c| / k where k is the number
@@ -157,38 +130,13 @@ class InfoGainRecommender(ContextRecommender):
                             nNeighbors_rated_item_in_same_context += 5
             puic = float(nNeighbors_rated_item_in_same_context) / float(nNeighbors)
             # Weight
-            filtered_recs.append((rating + rating * puic, movie))
+            # filtered_recs.append((rating + rating * puic, movie))
 
             # # Filter
-            # if puic >= tpc:
-            #     filtered_recs.append((rating, movie))
-            # else:
-            #     filtered_recs.append((rating - 3.25, movie))
+            if puic >= tpc:
+                filtered_recs.append((rating + rating * puic, movie))
+            else:
+                filtered_recs.append((rating - 0.25, movie))
 
         filtered_recs.sort(reverse=True)
         return filtered_recs[0:topN]
-
-    def __find_max_context(self, movie, context, udb):
-        """
-        finds the maximum repeating context for a high rated movie, over all users
-        :param movie:
-        :param context:
-        :param udb:
-        :return: Maximum repearing context if found else -1
-        """
-        list_context = []
-        # For each user
-        for user in udb:
-            # If the current user has rated the movie and the rating is greater that OPTIMUM
-            if movie in udb[user] and udb[user][movie][RATING] >= OPTIMUM:
-                # Get the context value where the current user has rated this movie
-                # and append it to list_context.
-                filter_ctx_value = udb[user][movie][context]
-                if type(filter_ctx_value) == numpy.float64:
-                    list_context.append(udb[user][movie][context])
-        # Get the maximum context value found
-        if len(list_context) > 1:
-            m = max(k for k, v in Counter(list_context).items())
-        else:
-            m = -1
-        return m
