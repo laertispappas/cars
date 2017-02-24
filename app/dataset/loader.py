@@ -38,6 +38,13 @@ class Loader(object):
 
         df = pd.read_csv(filename, na_values='-1')
 
+        # Normalize ratings!
+        # df = df.groupby('userID').transform(lambda x: x - x.mean())
+        # cols_to_norm = ['rating']
+        # df[cols_to_norm] = df[cols_to_norm].apply(lambda x: (x - x.min()) / (x.max() - x.min()))
+        # df = df[['two', 'three']].apply(lambda x: (x - x.min()) / (x.max() - x.min()))
+        # df = df.clip(lower=0.01, upper=0.99)
+
         # Replace missing values with the mean of available values
         for c in df.columns:
             mean = df[c].mean()

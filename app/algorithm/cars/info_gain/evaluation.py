@@ -92,7 +92,7 @@ def KFoldSplit(data, fold, nFolds):  # fold: 0~4 when 5-Fold validation
     return trainSet, testSet
 
 
-def KFold(data, recommender, simMeasure=sim_pearson, nNeighbors=40, topN=10, nFolds=4):
+def KFold(data, recommender, simMeasure=sim_pearson, nNeighbors=50, topN=10, nFolds=4):
     result = AutoVivification()
     start_time = datetime.now()
 
@@ -121,8 +121,10 @@ def KFold(data, recommender, simMeasure=sim_pearson, nNeighbors=40, topN=10, nFo
         result[type]["Hit-rate"] = float(totalHitrate) / nFolds
     print("Execution time: {}".format(datetime.now() - start_time))
 
+    print "******** TOP ", str(topN), " ******"
     print result['2d']['F1-score']
     print result['ctx']['F1-score']
+    print "Next"
 
     # plot_results(result, type='F1-score')
     return result
@@ -265,6 +267,7 @@ def plot_results(data, type=None):
         plt.legend()
         plt.tight_layout()
         plt.show()
+
 def evaluate():
     from app.algorithm.cars.info_gain.info_gain_recommender import InfoGainRecommender
     context_conditions = {
@@ -278,15 +281,16 @@ def evaluate():
         for condition in context_conditions[context]:
             print context
             print condition
-            data_object = DataObject()
-            recommender = InfoGainRecommender(data_object)
-            recommender.run()
-            recommender.filters = [(int(context), condition)]
-            current_results = KFold(recommender.training_data, recommender)
-            result['ctx'][str(context)]['2d'] = current_results['2d']
-            result['ctx'][str(context)][str(condition)] = current_results['ctx']
+            for topN in range(1, 11):
+                data_object = DataObject()
+                recommender = InfoGainRecommender(data_object)
+                recommender.run()
+                recommender.filters = [(int(context), condition)]
+                current_results = KFold(recommender.training_data, recommender, topN=topN)
+                result["top-" + str(topN)]['ctx'][str(context)]['2d'] = current_results['2d']
+                result["top-" + str(topN)]['ctx'][str(context)][str(condition)] = current_results['ctx']
 
-    filename = "top10_hybrid_filter_weight_all_results.json"
+    filename = "roc_weight_all_results.json"
     results_to_json(result, filename)
     plot_results(result)
 

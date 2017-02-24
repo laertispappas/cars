@@ -9,7 +9,7 @@ import numpy
 
 import os
 
-from app.utils.similarities import sim_euclidean, sim_pearson
+from app.utils.similarities import sim_pearson
 
 RATING = 0 # Holds the index of rating in user preference array
 OPTIMUM = 3.5 # Optimum rating for recommendation > 3.5
@@ -18,7 +18,6 @@ VERBOSE = True
 class InfoGainRecommender(ContextRecommender):
     def __init__(self, data_object):
         super(self.__class__, self).__init__(data_object)
-        # self.filters = [(8, 3), (5, 2), (9, 1), (10, 1), (6, 2), (16, 2), (13, 2), (7, 1), (14, 2), (12, 1), (11, 2)]
         self.filters = [(5,2)]
 
     def init_model(self):
@@ -36,21 +35,21 @@ class InfoGainRecommender(ContextRecommender):
 
     # TODO implement on concrete class
     def TraditionalRecommendation(self, user, simMeasure=sim_pearson, nNeighbors=None, topN=10):
-        return self.__user_cf_recs(user, simMeasure, nNeighbors, topN)
+        return self.cf_recs(user, simMeasure, nNeighbors, topN)
 
     def PostFilteringRecommendation(self, user, simMeasure=sim_pearson, nNeighbors=None, topN=10):
         # TODO: remove all 999999999
-        recs = self.__user_cf_recs(user, simMeasure, nNeighbors, topN=99999999999)
-        return self.__contextual_filter(user, recs, topN)[0:topN]
+        recs = self.cf_recs(user, simMeasure, nNeighbors, topN=99999999999)
+        return self.__contextual_filter(recs, topN)[0:topN]
 
 
     # Returns top N context aware recommendations for the given user.
     #
     def top_recommendations(self, user, N = 10):
-        recs = self.__user_cf_recs(user)
+        recs = self.cf_recs(user)
 
         # Context - Value tuple
-        filter_recs = self.__contextual_filter(user, recs, topN=N)
+        filter_recs = self.__contextual_filter(recs, topN=N)
         return filter_recs[1:N]
 
     def getPredictedRating(self, user, item, nearestNeighbors):
@@ -78,7 +77,9 @@ class InfoGainRecommender(ContextRecommender):
             return 0
         return meanRating + (weightedSum / normalizingFactor)
 
-    def __user_cf_recs(self, user, similarity=sim_pearson, nNeighbors=50, topN=10):
+    def cf_recs(self, user, similarity=sim_pearson, nNeighbors=20, topN=10):
+        self.target_user = user
+
         predictedScores = []
         self.similarities = self.getNearestNeighbors(user, similarity, nNeighbors)
         for item in self.dao.movies.keys():
@@ -105,7 +106,26 @@ class InfoGainRecommender(ContextRecommender):
             similarities = similarities[0:nNeighbors]
         return similarities  # similarities = [(similarity, neighbor), ...]
 
-    def __contextual_filter(self, user, recommendations, topN=10):
+    def getContextualNearestNeighbors(self, target, simMeasure, nNeighbors=None):
+        prefs = self.training_data
+
+        context, filter_ctx_value = self.filters[0]
+        # if movie in self.training_data[neighbor] and context in self.training_data[neighbor][movie] and self.training_data[neighbor][movie][context] == filter_ctx_value:
+
+        similarities = []
+        for other in prefs:
+            if other == target:
+                next
+            for movie in self.training_data[other]:
+                if context in self.training_data[other][movie] and self.training_data[other][movie][context] == filter_ctx_value:
+                    similarities.append((simMeasure(prefs, target, other), other))
+        # similarities = [(simMeasure(prefs, target, other), other) for other in prefs if target != other]
+        similarities.sort(reverse=True)
+        if nNeighbors != None:
+            similarities = similarities[0:nNeighbors]
+        return similarities  # similarities = [(similarity, neighbor), ...]
+
+    def __contextual_filter(self, recommendations, topN=10):
         # Relevance of item i for target user u in a particular context c
         # is approximated by the propability Pc(u,i,c) = |Uu,i,c| / k where k is the number
         # of neighbors used by kNNand Uu,i,c = { v in N(u)|Rv,i,c != 0} that is the user's neighbor v
@@ -119,24 +139,30 @@ class InfoGainRecommender(ContextRecommender):
         # the context-aware rating prediction.
         #
         filtered_recs = []
-        nNeighbors = 50
-        tpc = 0.01
+        nNeighbors = len(self.similarities)
+        self.contextual_similarities = self.getContextualNearestNeighbors(self.target_user, sim_pearson, nNeighbors)
+        tpc = 0.2
 
         for rating, movie in recommendations:
             nNeighbors_rated_item_in_same_context = 0
-            for sim, neighbor in self.similarities:
+            for sim, neighbor in self.contextual_similarities:
                 for context, filter_ctx_value in self.filters:
                     if movie in self.training_data[neighbor] and context in self.training_data[neighbor][movie] and self.training_data[neighbor][movie][context] == filter_ctx_value:
-                            nNeighbors_rated_item_in_same_context += 5
+                            nNeighbors_rated_item_in_same_context += 1
             puic = float(nNeighbors_rated_item_in_same_context) / float(nNeighbors)
             # Weight
-            # filtered_recs.append((rating + rating * puic, movie))
+            filtered_recs.append((rating + rating * puic, movie))
+            # Filter
+            # if puic >= tpc:
+            #   filtered_recs.append((rating, movie))
+            # else:
+            #   filtered_recs.append((rating - 3.25, movie))
 
-            # # Filter
-            if puic >= tpc:
-                filtered_recs.append((rating + rating * puic, movie))
-            else:
-                filtered_recs.append((rating - 0.25, movie))
+            # # Filter - weight
+            # if puic >= tpc:
+            #     filtered_recs.append((rating + rating * puic, movie))
+            # else:
+            #     filtered_recs.append((rating - 0.25, movie))
 
         filtered_recs.sort(reverse=True)
         return filtered_recs[0:topN]
