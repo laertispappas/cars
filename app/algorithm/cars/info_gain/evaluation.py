@@ -164,51 +164,8 @@ def plot_results(data, type=None):
     import numpy as np
     import matplotlib.pyplot as plt
 
-    # endEmo, dominantEmo, decision, (mood ?), location, interaction
-    # data = {"ctx": { "10": {
-    #     "2d": {"Recall": 0.005904833772480831, "F1-score": 0.002873184912091745, "Precision": 0.0028925619834710746,
-    #            "Hit-rate": 0.028925619834710745},
-    #     "1": {"Recall": 0.00783877425658832, "F1-score": 0.004231592132021987, "Precision": 0.004132231404958678,
-    #           "Hit-rate": 0.04132231404958678},
-    #     "3": {"Recall": 0.010788651306699433, "F1-score": 0.004544111370969488, "Precision": 0.0043388429752066115,
-    #           "Hit-rate": 0.04338842975206612},
-    #     "2": {"Recall": 0.011392711735921058, "F1-score": 0.007476045196867347, "Precision": 0.007851239669421488,
-    #           "Hit-rate": 0.07851239669421488},
-    #     "4": {"Recall": 0.005778571146218205, "F1-score": 0.002793440095504823, "Precision": 0.0028925619834710746,
-    #           "Hit-rate": 0.028925619834710745}}, "5": {
-    #     "2d": {"Recall": 0.005904833772480831, "F1-score": 0.002873184912091745, "Precision": 0.0028925619834710746,
-    #            "Hit-rate": 0.028925619834710745},
-    #     "1": {"Recall": 0.007850720261198462, "F1-score": 0.003128845565815495, "Precision": 0.0030991735537190084,
-    #           "Hit-rate": 0.030991735537190084},
-    #     "3": {"Recall": 0.007843006003058827, "F1-score": 0.004899381450928051, "Precision": 0.005165289256198348,
-    #           "Hit-rate": 0.05165289256198347},
-    #     "2": {"Recall": 0.004384966281890386, "F1-score": 0.0025518883059245877, "Precision": 0.0030991735537190084,
-    #           "Hit-rate": 0.030991735537190084},
-    #     "4": {"Recall": 0.00897860802179707, "F1-score": 0.004196975493639005, "Precision": 0.0035123966942148762,
-    #           "Hit-rate": 0.03512396694214876}}, "7": {
-    #     "2d": {"Recall": 0.005904833772480831, "F1-score": 0.002873184912091745, "Precision": 0.0028925619834710746,
-    #            "Hit-rate": 0.028925619834710745},
-    #     "1": {"Recall": 0.0024953025287249883, "F1-score": 0.002126328048723975, "Precision": 0.0024793388429752063,
-    #           "Hit-rate": 0.024793388429752067},
-    #     "3": {"Recall": 0.01021520115000509, "F1-score": 0.006681678978528818, "Precision": 0.00743801652892562,
-    #           "Hit-rate": 0.0743801652892562},
-    #     "2": {"Recall": 0.008715946578332008, "F1-score": 0.004711837995611522, "Precision": 0.004752066115702479,
-    #           "Hit-rate": 0.047520661157024795},
-    #     "4": {"Recall": 0.002082593695009412, "F1-score": 0.0022945576648042104, "Precision": 0.003305785123966942,
-    #           "Hit-rate": 0.03305785123966942}}, "6": {
-    #     "2d": {"Recall": 0.005904833772480831, "F1-score": 0.002873184912091745, "Precision": 0.0028925619834710746,
-    #            "Hit-rate": 0.028925619834710745},
-    #     "1": {"Recall": 0.007179654550122139, "F1-score": 0.003199847832744489, "Precision": 0.0033057851239669425,
-    #           "Hit-rate": 0.03305785123966942},
-    #     "3": {"Recall": 0.003413107340101063, "F1-score": 0.002202862199444565, "Precision": 0.0024793388429752068,
-    #           "Hit-rate": 0.024793388429752067},
-    #     "2": {"Recall": 0.005805100738543668, "F1-score": 0.00440435549474326, "Precision": 0.005371900826446281,
-    #           "Hit-rate": 0.05371900826446281}} }
-    # }
-
     for context in data['ctx'].keys():
         labels = []
-        n_groups = len(data['ctx'][context].keys())
         baseline_metrics = (data['ctx'][context]['2d']['Precision'], data['ctx'][context]['2d']['Recall'], data['ctx'][context]['2d']['F1-score'])
         contextual_metrics = AutoVivification()
 
@@ -290,7 +247,7 @@ def evaluate():
                 result["top-" + str(topN)]['ctx'][str(context)]['2d'] = current_results['2d']
                 result["top-" + str(topN)]['ctx'][str(context)][str(condition)] = current_results['ctx']
 
-    filename = "roc_weight_all_results.json"
+    filename = "roc_filter_weight_all_results.json"
     results_to_json(result, filename)
     plot_results(result)
 
