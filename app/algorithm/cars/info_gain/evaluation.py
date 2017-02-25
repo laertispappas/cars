@@ -247,7 +247,7 @@ def evaluate():
                 result["top-" + str(topN)]['ctx'][str(context)]['2d'] = current_results['2d']
                 result["top-" + str(topN)]['ctx'][str(context)][str(condition)] = current_results['ctx']
 
-    filename = "roc_filter_weight_all_results.json"
+    filename = "roc_hybrid_filter_weight_all_results.json"
     results_to_json(result, filename)
     plot_results(result)
 
