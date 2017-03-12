@@ -162,7 +162,7 @@ class InfoGainRecommender(ContextRecommender):
             if puic >= tpc:
                 filtered_recs.append((rating + rating * puic, movie))
             else:
-                filtered_recs.append((rating - 0.25 - rating * puic, movie))
+                filtered_recs.append((rating - 0.25, movie))
 
         filtered_recs.sort(reverse=True)
         return filtered_recs[0:topN]
