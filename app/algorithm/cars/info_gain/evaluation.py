@@ -10,6 +10,59 @@ from datetime import datetime
 
 import matplotlib.pyplot as plt
 import numpy as np
+from math import sqrt
+
+def KFoldRMSE(data, recommender, simMeasure=sim_pearson, nNeighbors=50, topN=10, nFolds=4):
+    result = AutoVivification()
+    start_time = datetime.now()
+    cnt_2d = 0
+    cnt_ctx = 0
+    sum_2d = 0
+    sum_ctx = 0
+
+    for fold in range(nFolds):
+        trainSet, testSet = KFoldSplit(data, fold, nFolds)
+        recommender.set_training_set(trainSet)
+        for user in testSet.keys():
+            all_2d_recommendations = []
+            all_ctx_recommendations = []
+
+            _all_2d_recommendations = recommender.TraditionalRecommendation(user, simMeasure, nNeighbors, 9999999999)
+            _all_ctx_recommendations = recommender.PostFilteringRecommendation(user, simMeasure, nNeighbors, 999999999)
+            for rating, movie in _all_2d_recommendations:
+                for ctx_rating, ctx_movie in _all_ctx_recommendations:
+                    if ctx_rating > 0 and rating > 0 and ctx_movie == movie:
+                        all_2d_recommendations.append((rating, movie))
+                        all_ctx_recommendations.append((ctx_rating, movie))
+            if len(all_2d_recommendations) != len(all_ctx_recommendations):
+                raise "Recs are not the same size"
+
+            for calc_rating, rec_movie in all_2d_recommendations:
+                if rec_movie in testSet[user].keys():
+                    rating = testSet[user][rec_movie][0]
+                    dif = (calc_rating - rating) ** 2
+                    sum_2d = sum_2d + dif
+                    cnt_2d += 1
+            for calc_rating, rec_movie in all_ctx_recommendations:
+                if rec_movie in testSet[user].keys():
+                    rating = testSet[user][rec_movie][0]
+                    if calc_rating >= 5:
+                        calc_rating = 5
+                    if calc_rating < 0:
+                        calc_rating = 0
+                    dif = (calc_rating - rating) ** 2
+                    sum_ctx = sum_ctx + dif
+                    cnt_ctx += 1
+    rmse_2d = sqrt(sum_2d / cnt_2d)
+    rmse_ctx = sqrt(sum_ctx / cnt_ctx)
+    print "RMSE fron traditional recommender: ", str(rmse_2d)
+    print "RMSE fron Contextual recommender: ", str(rmse_ctx)
+    print "ctn_2d", cnt_2d
+    print "ctn_ctx", cnt_ctx
+    print "sum_2d", sum_2d
+    print "sum_ctx", sum_ctx
+
+    print "************************************************************"
 
 def evaluateRecommender(testSet, trainSet, recommender, simMeasure=None, nNeighbors=None, topN=None, type='2d'):
     result = AutoVivification()
@@ -21,7 +74,7 @@ def evaluateRecommender(testSet, trainSet, recommender, simMeasure=None, nNeighb
     totalF1score = 0
     totalHit = 0
 
-    for user in recommender.dao.users:
+    for user in testSet.keys():
         if type == '2d':
             recommendation = recommender.TraditionalRecommendation(user, simMeasure, nNeighbors, topN)
         else:
@@ -121,10 +174,9 @@ def KFold(data, recommender, simMeasure=sim_pearson, nNeighbors=50, topN=10, nFo
         result[type]["Hit-rate"] = float(totalHitrate) / nFolds
     print("Execution time: {}".format(datetime.now() - start_time))
 
-    print "******** TOP ", str(topN), " ******"
-    print result['2d']['F1-score']
-    print result['ctx']['F1-score']
-    print "Next"
+    print "******** TOPN=", str(topN), " ******"
+    print "2D f1Score: ", result['2d']['F1-score']
+    print "postFilter f1Score", result['ctx']['F1-score']
 
     # plot_results(result, type='F1-score')
     return result
@@ -226,6 +278,7 @@ def plot_results(data, type=None):
         plt.show()
 
 def evaluate():
+    print "Evaluation\n"
     from app.algorithm.cars.info_gain.info_gain_recommender import InfoGainRecommender
     context_conditions = {
         '5': range(1, 5),
@@ -234,10 +287,20 @@ def evaluate():
         '10': range(1, 5),
     }
     result = AutoVivification()
+    # for context in context_conditions.keys():
+    #     for condition in context_conditions[context]:
+    #         print context
+    #         print condition
+    #         data_object = DataObject()
+    #         recommender = InfoGainRecommender(data_object)
+    #         recommender.run()
+    #         recommender.filters = [(int(context), condition)]
+    #         KFoldRMSE(recommender.training_data, recommender)
     for context in context_conditions.keys():
         for condition in context_conditions[context]:
-            print context
-            print condition
+            print "Context: ", ContextMappings[context]
+            print "Condition: ", ContextConditionMappings[context][condition]
+            # precision
             for topN in range(1, 11):
                 data_object = DataObject()
                 recommender = InfoGainRecommender(data_object)
@@ -246,8 +309,7 @@ def evaluate():
                 current_results = KFold(recommender.training_data, recommender, topN=topN)
                 result["top-" + str(topN)]['ctx'][str(context)]['2d'] = current_results['2d']
                 result["top-" + str(topN)]['ctx'][str(context)][str(condition)] = current_results['ctx']
-
-    filename = "roc_hybrid_filter_weight_all_results_2.json"
+    filename = "out.json"
     results_to_json(result, filename)
     plot_results(result)
 

@@ -8,14 +8,37 @@ from app.algorithm.cars.info_gain.info_gain_recommender import InfoGainRecommend
 
 import argparse
 
+def print_usage():
+    print """
+        Usage:
+            (Get a list of user ids):           python app.py list_users
+            (Get a list of context ids)         python app.py list_context
+            (postFiltering recommendations)     python app.py recommend userID contextID dimensionID
+            (Evaluate recommenders)             python app.py evaluate
+    """
+
 def main():
-    if len(sys.argv) < 4:
-        print "Usage: python app.py userID ContextID ContextCondtionID"
+    if len(sys.argv) == 1:
+        print_usage()
+        exit()
+    if sys.argv[1] == "list_users":
+        data_object = DataObject()
+        print data_object.users.keys()
+        exit()
+    if sys.argv[1] == "list_context":
+        data_object = DataObject()
+        print data_object.feature_dict
+        exit()
+    if sys.argv[1] == "evaluate":
+        evaluate()
+        exit()
+    if len(sys.argv) < 5:
+        print_usage()
         exit()
 
-    user = int(sys.argv [1])
-    context = int(sys.argv [2])
-    context_condition = int(sys.argv [3])
+    user = int(sys.argv [2])
+    context = int(sys.argv [3])
+    context_condition = int(sys.argv [4])
 
     data_object = DataObject()
     # data_object.print_specs()
@@ -26,7 +49,7 @@ def main():
     recommender.filters = [(int(context), int(context_condition))]
     recommendations = recommender.top_recommendations(int(user))
 
-    print "Predicted movies for user: ", 193
+    print "Predicted movies for user: ", user
     print "Movie\t\tPrediction"
     print "******************************"
     for pred_rating, movie in recommendations:
