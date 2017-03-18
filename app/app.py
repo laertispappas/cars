@@ -31,5 +31,4 @@ def main():
     print "******************************"
     for pred_rating, movie in recommendations:
         print movie, "\t\t" ,pred_rating
-    evaluate()
 if __name__ == "__main__": main()
