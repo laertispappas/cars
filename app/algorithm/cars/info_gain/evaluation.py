@@ -287,15 +287,15 @@ def evaluate():
         '10': range(1, 5),
     }
     result = AutoVivification()
-    # for context in context_conditions.keys():
-    #     for condition in context_conditions[context]:
-    #         print context
-    #         print condition
-    #         data_object = DataObject()
-    #         recommender = InfoGainRecommender(data_object)
-    #         recommender.run()
-    #         recommender.filters = [(int(context), condition)]
-    #         KFoldRMSE(recommender.training_data, recommender)
+    for context in context_conditions.keys():
+        for condition in context_conditions[context]:
+            print context
+            print condition
+            data_object = DataObject()
+            recommender = InfoGainRecommender(data_object)
+            recommender.run()
+            recommender.filters = [(int(context), condition)]
+            KFoldRMSE(recommender.training_data, recommender)
     for context in context_conditions.keys():
         for condition in context_conditions[context]:
             print "Context: ", ContextMappings[context]
