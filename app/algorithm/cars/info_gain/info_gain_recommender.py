@@ -34,10 +34,10 @@ class InfoGainRecommender(ContextRecommender):
             self.training_data = trainingSet
 
     # TODO implement on concrete class
-    def TraditionalRecommendation(self, user, simMeasure=sim_pearson, nNeighbors=None, topN=10):
+    def TraditionalRecommendation(self, user, simMeasure=sim_pearson, nNeighbors=None, topN=5):
         return self.cf_recs(user, simMeasure, nNeighbors, topN)
 
-    def PostFilteringRecommendation(self, user, simMeasure=sim_pearson, nNeighbors=None, topN=10):
+    def PostFilteringRecommendation(self, user, simMeasure=sim_pearson, nNeighbors=None, topN=5):
         # TODO: remove all 999999999
         recs = self.cf_recs(user, simMeasure, nNeighbors, topN=99999999999)
         return self.__contextual_filter(recs, topN)[0:topN]

@@ -26,6 +26,24 @@ class DataObject(object):
 
         self.context_types, self.total_context_types = self.__get_contexts()
 
+    def user_ids(self):
+        return self.users.keys()
+
+    def preferences_from_user(self, user_id, orderByID=True):
+        userPrefs = self.users.get(user_id, None)
+
+        if userPrefs is None:
+            raise ValueError('User not found in dataset!')
+
+        userPrefs = userPrefs.items()
+
+        if not orderByID:
+            userPrefs.sort(key=lambda userPref: userPref[1][0], reverse=True)
+        else:
+            userPrefs.sort(key=lambda userPref: userPref[0])
+
+        return userPrefs
+
     def print_specs(self):
         print "Num of ratings", self.total_ratings
         print "Num of users", self.total_users

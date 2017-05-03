@@ -11,6 +11,9 @@ from datetime import datetime
 import matplotlib.pyplot as plt
 import numpy as np
 from math import sqrt
+from random import random
+from math import sqrt, log
+from numpy import std, array, mean
 
 def KFoldRMSE(data, recommender, simMeasure=sim_pearson, nNeighbors=50, topN=10, nFolds=4):
     result = AutoVivification()
@@ -277,7 +280,167 @@ def plot_results(data, type=None):
         plt.tight_layout()
         plt.show()
 
-def evaluate():
+class RecommenderEvaluator(object):
+    def __init__(self, minPreference=0, maxPreference=5):
+        self.minPreference = minPreference
+        self.maxPreference = maxPreference
+
+    def evaluate(self, recommender, dataObject, trainingPercentage,
+            evaluationPercentage):
+        """
+        :param recommender: Recommender to test
+        :param dataObject: test dataset
+        :param trainingPercentage: % of each users preferences to use to produce recommendations
+        :param evaluationPercentage: estimated preference values to evaluate 'evaluationPercentage'  percentage of users to use in evaluation
+        :return: a Dictionary of the metrics computef by the evaluator
+        """
+        raise NotImplementedError("Abstract Base Class")
+
+class PrecisionRecommenderEvaluator(RecommenderEvaluator):
+    """
+    Determine the top n preferecnes for each user and evaluate to get information
+    retrieval statistics based on dataObject that does not have these values (at).
+    This number n is the 'at' value, as in 'precision at 5'.  For
+    example this would mean precision evaluated by removing the top 5
+    preferences for a user and then finding the percentage of those 5 items
+    included in the top 5 recommendations for that user.
+    """
+
+    def evaluate(self, recommender, dataObject, at, evaluationPercentage, relevanceThreshold=None):
+        if evaluationPercentage > 1.0 or evaluationPercentage < 0.0:
+            raise Exception('Evaluation Percentage is above/under the limit.')
+        if at < 1:
+            raise Exception('at must be at leaste 1.')
+
+        irStats = {'precision': None, 'recall': None, 'nDCG': None}
+        irFreqs = {'precision': 0, 'recall': 0, 'nDCG': 0}
+
+        for userID in dataObject.user_ids():
+            if random() < evaluationPercentage:
+                prefs = dataObject.preferences_from_user(userID)
+                if len(prefs) < 2 * at:
+                    # Really not enough prefs to meaningfully evaluate the user
+                    continue
+
+                relevantItemIDs = []
+
+                # List some most-preferred items that would count as most
+                # relevant results
+                relevanceThreshold = relevanceThreshold if relevanceThreshold else self.computeThreshold(prefs)
+
+                prefs = sorted(prefs, key=lambda x: x[1][0], reverse=True)
+
+                for index, pref in enumerate(prefs):
+                    if index < at:
+                        if pref[1][0] >= relevanceThreshold:
+                            relevantItemIDs.append(pref[0])
+
+                if len(relevantItemIDs) == 0:
+                    continue
+
+                trainingUsers = {}
+                for otherUserID in dataObject.user_ids():
+                    self.processOtherUser(userID, relevantItemIDs, trainingUsers, otherUserID, dataObject)
+
+                recommender.set_training_set(trainingUsers)
+                # trainingModel = DictDataModel(trainingUsers)
+                # recommender.model = trainingModel
+
+                try:
+                    # prefs = trainingModel.preferences_from_user(userID)
+                    userPrefs = trainingUsers.get(userID, None)
+                    if userPrefs is None:
+                        raise ValueError('User not found in dataset!')
+                    userPrefs = userPrefs.items()
+                    userPrefs.sort(key=lambda userPref: userPref[0])
+                    if not userPrefs:
+                        continue
+                except:
+                    #Excluded all prefs for the user. move on.
+                    continue
+
+                recommendedItems = recommender.TraditionalRecommendation(userID, topN=at)
+                contextualRecommendedItems = recommender.PostFilteringRecommendation(userID, topN=at)
+
+                traditionalIntersection = 0
+                contextualIntersection = 0
+                for rating, recommendedItem in recommendedItems:
+                    if recommendedItem in relevantItemIDs:
+                        traditionalIntersection += 1
+
+                print traditionalIntersection
+                intersectionSize = len([recommendedItem for rating, recommendedItem in recommendedItems if recommendedItem in relevantItemIDs])
+                print intersectionSize
+
+                for key in irStats.keys():
+                    irStats[key] = 0.0
+
+                # Precision
+                if len(recommendedItems) > 0:
+                    irStats['precision'] += \
+                            (intersectionSize / float(len(recommendedItems)))
+                    irFreqs['precision'] += 1
+
+                # Recall
+                irStats['recall'] += \
+                        (intersectionSize / float(len(relevantItemIDs)))
+                irFreqs['recall'] += 1
+
+                # nDCG. In computing, assume relevant IDs have relevance 1 and
+                # others 0.
+                # cumulativeGain = 0.0
+                # idealizedGain = 0.0
+                # for index, recommendedItem in enumerate(recommendedItems):
+                #     discount = 1.0 if index == 0 \
+                #                 else 1.0 / self.log2(index + 1)
+                #     if recommendedItem in relevantItemIDs:
+                #         cumulativeGain += discount
+                #     # Otherwise we are multiplying discount by relevance 0 so
+                #     # it does nothing.  Ideally results would be ordered with
+                #     # all relevant ones first, so this theoretical ideal list
+                #     # starts with number of relevant items equal to the total
+                #     # number of relevant items
+                #     if index < len(relevantItemIDs):
+                #         idealizedGain += discount
+                # irStats['nDCG'] += float(cumulativeGain) / idealizedGain \
+                #                     if idealizedGain else 0.0
+                # irFreqs['nDCG'] += 1
+
+        for key in irFreqs:
+            irStats[key] = irStats[key] / float(irFreqs[key]) \
+                                if irFreqs[key] > 0 else None
+        sum_score = irStats['precision'] + irStats['recall'] \
+                if irStats['precision'] is not None and \
+                        irStats['recall'] is not None \
+                else None
+
+        irStats['f1Score'] = None if not sum_score else \
+                (2.0) * irStats['precision'] * irStats['recall'] / sum_score
+
+        return irStats
+
+    def processOtherUser(self, userID, relevantItemIDs, trainingUsers, otherUserID, dataObject):
+        prefs = dataObject.preferences_from_user(otherUserID)
+
+        if userID == otherUserID:
+            prefsOtherUser = [pref for pref in prefs if pref[0] not in relevantItemIDs]
+            if prefsOtherUser:
+                trainingUsers[otherUserID] = dict(prefsOtherUser)
+
+        else:
+            trainingUsers[otherUserID] = dict(prefs)
+
+    def computeThreshold(self, prefs):
+        if len(prefs) < 2:
+            #Not enough data points: return a threshold that allows everything
+            return - 10000000
+        data = [pref[1][0] for pref in prefs]
+        return mean(array(data)) + std(array(data))
+
+    def log2(self, value):
+        return log(value) / log(2.0)
+
+def __evaluate():
     print "Evaluation\n"
     from app.algorithm.cars.info_gain.info_gain_recommender import InfoGainRecommender
     context_conditions = {
