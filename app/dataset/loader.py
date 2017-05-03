@@ -2,7 +2,6 @@
 # This class is responsible for loading the models in
 # the apropriate data structure for recommender
 
-from app.entities.datastore import Datastore
 import os
 import pandas as pd
 import numpy as np

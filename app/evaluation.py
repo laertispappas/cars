@@ -12,6 +12,6 @@ def main():
     data_object = DataObject()
     evaluator = PrecisionRecommenderEvaluator()
     recommender = InfoGainRecommender(data_object)
-    result = evaluator.evaluate(recommender, data_object, 25, 1.0, 3.5)
+    result = evaluator.evaluate(recommender, data_object, 10, 1.0, 3.5)
     print result
 if __name__ == "__main__": main()

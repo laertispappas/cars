@@ -362,15 +362,11 @@ class PrecisionRecommenderEvaluator(RecommenderEvaluator):
                 recommendedItems = recommender.TraditionalRecommendation(userID, topN=at)
                 contextualRecommendedItems = recommender.PostFilteringRecommendation(userID, topN=at)
 
-                traditionalIntersection = 0
-                contextualIntersection = 0
-                for rating, recommendedItem in recommendedItems:
-                    if recommendedItem in relevantItemIDs:
-                        traditionalIntersection += 1
-
-                print traditionalIntersection
                 intersectionSize = len([recommendedItem for rating, recommendedItem in recommendedItems if recommendedItem in relevantItemIDs])
+                contextualIntersection = len([recommendedItem for rating, recommendedItem in contextualRecommendedItems if recommendedItem in relevantItemIDs])
+
                 print intersectionSize
+                print contextualIntersection
 
                 for key in irStats.keys():
                     irStats[key] = 0.0
