@@ -2,7 +2,6 @@ import os, sys
 
 sys.path.insert(0, os.path.abspath(".."))
 
-from app.algorithm.cars.info_gain.evaluation import evaluate
 from app.dataset.data_object import DataObject
 from app.algorithm.cars.info_gain.info_gain_recommender import InfoGainRecommender
 
@@ -14,7 +13,7 @@ def print_usage():
             (Get a list of user ids):           python app.py list_users
             (Get a list of context ids)         python app.py list_context
             (postFiltering recommendations)     python app.py recommend userID contextID dimensionID
-            (Evaluate recommenders)             python app.py evaluate
+            (Evaluate recommenders)             python evaluate.py
     """
 
 def main():
@@ -29,16 +28,13 @@ def main():
         data_object = DataObject()
         print data_object.feature_dict
         exit()
-    if sys.argv[1] == "evaluate":
-        evaluate()
-        exit()
     if len(sys.argv) < 5:
         print_usage()
         exit()
 
     user = int(sys.argv [2])
-    context = int(sys.argv [3])
-    context_condition = int(sys.argv [4])
+    context = sys.argv [3]
+    context_condition = sys.argv [4]
 
     data_object = DataObject()
     # data_object.print_specs()
@@ -46,8 +42,8 @@ def main():
 
     recommender = InfoGainRecommender(data_object)
     recommender.run()
-    recommender.filters = [(int(context), int(context_condition))]
-    recommendations = recommender.top_recommendations(int(user))
+    recommender.filters = [(context, context_condition)]
+    recommendations = recommender.top_recommendations(user)
 
     print "Predicted movies for user: ", user
     print "Movie\t\tPrediction"

@@ -19,7 +19,7 @@ class DataObject(object):
     }
 
     def __init__(self):
-        self.ratings, self.users, self.movies = Loader().load_ldos_csv()
+        self.ratings, self.users, self.movies = Loader().load_dapaul_csv()
         self.total_ratings = self.__total_ratings()
         self.total_movies = self.__total_movies()
         self.total_users = self.__total_users()

@@ -76,6 +76,7 @@ def evaluateRecommender(testSet, trainSet, recommender, simMeasure=None, nNeighb
     totalRecall = 0
     totalF1score = 0
     totalHit = 0
+    totalRelevantItem = 0
 
     for user in testSet.keys():
         if type == '2d':
@@ -179,7 +180,12 @@ def KFold(data, recommender, simMeasure=sim_pearson, nNeighbors=50, topN=10, nFo
 
     print "******** TOPN=", str(topN), " ******"
     print "2D f1Score: ", result['2d']['F1-score']
-    print "postFilter f1Score", result['ctx']['F1-score']
+    print "2D precision: ", result['2d']['Precision']
+    print "2D recall: ", result['2d']['Recall']
+
+    print "Contextual f2score:", result['ctx']['F1-score']
+    print "Contextual Precision:", result['ctx']['Precision']
+    print "Contextual Recall:", result['ctx']['Recall']
 
     # plot_results(result, type='F1-score')
     return result
@@ -440,31 +446,29 @@ def __evaluate():
     print "Evaluation\n"
     from app.algorithm.cars.info_gain.info_gain_recommender import InfoGainRecommender
     context_conditions = {
-        '5': range(1, 5),
-        '6': range(1, 4),
-        '7': range(1, 5),
-        '10': range(1, 5),
+        'Time': ['Weekday', 'Weekend'],
+        'Location': ['Home', 'Cinema'],
+        'Companion': ['Alone', 'Family', 'Partner'],
     }
     result = AutoVivification()
+    # for context in context_conditions.keys():
+    #     for condition in context_conditions[context]:
+    #         print context
+    #         print condition
+    #         data_object = DataObject()
+    #         recommender = InfoGainRecommender(data_object)
+    #         recommender.run()
+    #         recommender.filters = [(context, condition)]
+    #         KFoldRMSE(recommender.training_data, recommender)
     for context in context_conditions.keys():
         for condition in context_conditions[context]:
-            print context
-            print condition
-            data_object = DataObject()
-            recommender = InfoGainRecommender(data_object)
-            recommender.run()
-            recommender.filters = [(int(context), condition)]
-            KFoldRMSE(recommender.training_data, recommender)
-    for context in context_conditions.keys():
-        for condition in context_conditions[context]:
-            print "Context: ", ContextMappings[context]
-            print "Condition: ", ContextConditionMappings[context][condition]
-            # precision
+            print "Context: ", context
+            print "Condition: ", condition
             for topN in range(1, 11):
                 data_object = DataObject()
                 recommender = InfoGainRecommender(data_object)
                 recommender.run()
-                recommender.filters = [(int(context), condition)]
+                recommender.filters = [(context, condition)]
                 current_results = KFold(recommender.training_data, recommender, topN=topN)
                 result["top-" + str(topN)]['ctx'][str(context)]['2d'] = current_results['2d']
                 result["top-" + str(topN)]['ctx'][str(context)][str(condition)] = current_results['ctx']

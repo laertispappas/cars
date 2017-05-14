@@ -19,6 +19,32 @@ class AutoVivification(dict):
 class Loader(object):
     """Loads all ratings from DB and store to a dic or to pandas dataframe"""
 
+    @classmethod
+    def load_dapaul_csv(cls):
+        dir = os.path.dirname(__file__)
+        filename = os.path.join(dir, 'ratings.txt')
+
+        df = pd.read_csv(filename, na_values='-1')
+
+        # Store user / item data in a dictionary
+        user_db = {} #AutoVivification()    # data-store for [userid][itemid] for training
+        movie_db = {}                   # data-store for [itemid][userid] for training
+        """
+        users = {userid: {itemid: [rating, age,sex,city,country, c1, c2, ................, c12]}}
+        items = {itemid: [director, a1, a2, a3, g1, g2, g3, budget, lang, country]}
+        """
+        # columns 2-19 user and contextual attributes
+        # 19-30 movie attributes
+        for rows in df.values:
+            if rows[0] not in user_db:
+                user_db[rows[0]] = {}
+            if rows[1] not in user_db[rows[0]]:
+                user_db[rows[0]][rows[1]] = []
+            user_db[rows[0]][rows[1]] = rows[2:6]
+            movie_db[rows[1]] = {}
+
+        return df, user_db, movie_db
+
     """
     Function
     ---------
