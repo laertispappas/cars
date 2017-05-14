@@ -318,8 +318,8 @@ class PrecisionRecommenderEvaluator(RecommenderEvaluator):
         if at < 1:
             raise Exception('at must be at leaste 1.')
 
-        irStats = {'precision': 0.0, 'recall': 0.0, 'nDCG': 0.0}
-        irFreqs = {'precision': 0, 'recall': 0, 'nDCG': 0}
+        irStats = {'precision': 0.0, 'precision-ctx': 0.0, 'recall': 0.0, 'recall-ctx': 0.0 , 'nDCG': 0.0}
+        irFreqs = {'precision': 0, 'precision-ctx': 0, 'recall': 0, 'recall-ctx': 0, 'nDCG': 0}
 
         for userID in dataObject.user_ids():
             if random() < evaluationPercentage:
@@ -370,7 +370,7 @@ class PrecisionRecommenderEvaluator(RecommenderEvaluator):
                 contextualRecommendedItems = recommender.PostFilteringRecommendation(userID, topN=at)
 
                 intersectionSize = len([recommendedItem for rating, recommendedItem in recommendedItems if recommendedItem in relevantItemIDs])
-                contextualIntersection = len([recommendedItem for rating, recommendedItem in contextualRecommendedItems if recommendedItem in relevantItemIDs])
+                contextualIntersectionSize = len([recommendedItem for rating, recommendedItem in contextualRecommendedItems if recommendedItem in relevantItemIDs])
 
                 # for key in irStats.keys():
                 #     irStats[key] = 0.0
@@ -378,30 +378,34 @@ class PrecisionRecommenderEvaluator(RecommenderEvaluator):
                 # Precision
                 if len(recommendedItems) > 0:
                     irStats['precision'] += (intersectionSize / float(len(recommendedItems)))
+                    irStats['precision-ctx'] += (contextualIntersectionSize / float(len(recommendedItem)))
                     irFreqs['precision'] += 1
+                    irFreqs['precision-ctx'] += 1
                 else:
                     raise "No recommended items"
 
                 # Recall
                 irStats['recall'] += (intersectionSize / float(len(relevantItemIDs)))
+                irStats['recall-ctx'] += (contextualIntersectionSize / float(len(relevantItemIDs)))
                 irFreqs['recall'] += 1
+                irFreqs['recall-ctx'] += 1
 
                 # nDCG. In computing, assume relevant IDs have relevance 1 and others 0.
-                cumulativeGain = 0.0
-                idealizedGain = 0.0
-                for index, recommendedItem in enumerate(recommendedItems):
-                    discount = 1.0 if index == 0 else 1.0 / self.log2(index + 1)
-                    if recommendedItem[1] in relevantItemIDs:
-                        cumulativeGain += discount
-                    # Otherwise we are multiplying discount by relevance 0 so
-                    # it does nothing.  Ideally results would be ordered with
-                    # all relevant ones first, so this theoretical ideal list
-                    # starts with number of relevant items equal to the total
-                    # number of relevant items
-                    if index < len(relevantItemIDs):
-                        idealizedGain += discount
-                irStats['nDCG'] += float(cumulativeGain) / idealizedGain #if idealizedGain else 0.0
-                irFreqs['nDCG'] += 1
+                # cumulativeGain = 0.0
+                # idealizedGain = 0.0
+                # for index, recommendedItem in enumerate(recommendedItems):
+                #     discount = 1.0 if index == 0 else 1.0 / self.log2(index + 1)
+                #     if recommendedItem[1] in relevantItemIDs:
+                #         cumulativeGain += discount
+                #     # Otherwise we are multiplying discount by relevance 0 so
+                #     # it does nothing.  Ideally results would be ordered with
+                #     # all relevant ones first, so this theoretical ideal list
+                #     # starts with number of relevant items equal to the total
+                #     # number of relevant items
+                #     if index < len(relevantItemIDs):
+                #         idealizedGain += discount
+                # irStats['nDCG'] += float(cumulativeGain) / idealizedGain #if idealizedGain else 0.0
+                # irFreqs['nDCG'] += 1
 
         for key in irFreqs:
             irStats[key] = irStats[key] / float(irFreqs[key]) \
@@ -411,8 +415,16 @@ class PrecisionRecommenderEvaluator(RecommenderEvaluator):
                         irStats['recall'] is not None \
                 else None
 
+        sum_score_ctx = irStats['precision-ctx'] + irStats['recall-ctx'] \
+                if irStats['precision-ctx'] is not None and \
+                        irStats['recall-ctx'] is not None \
+                else None
+
         irStats['f1Score'] = None if not sum_score else \
                 (2.0) * irStats['precision'] * irStats['recall'] / sum_score
+
+        irStats['f1Score-ctx'] = None if not sum_score_ctx else \
+                (2.0) * irStats['precision-ctx'] * irStats['recall-ctx'] / sum_score_ctx
 
         return irStats
 
