@@ -318,7 +318,7 @@ class PrecisionRecommenderEvaluator(RecommenderEvaluator):
         if at < 1:
             raise Exception('at must be at leaste 1.')
 
-        irStats = {'precision': None, 'recall': None, 'nDCG': None}
+        irStats = {'precision': 0.0, 'recall': 0.0, 'nDCG': 0.0}
         irFreqs = {'precision': 0, 'recall': 0, 'nDCG': 0}
 
         for userID in dataObject.user_ids():
@@ -348,7 +348,6 @@ class PrecisionRecommenderEvaluator(RecommenderEvaluator):
                 for otherUserID in dataObject.user_ids():
                     self.processOtherUser(userID, relevantItemIDs, trainingUsers, otherUserID, dataObject)
 
-                recommender.set_training_set(trainingUsers)
                 # trainingModel = DictDataModel(trainingUsers)
                 # recommender.model = trainingModel
 
@@ -365,48 +364,44 @@ class PrecisionRecommenderEvaluator(RecommenderEvaluator):
                     #Excluded all prefs for the user. move on.
                     continue
 
+                recommender.set_training_set(trainingUsers)
+                recommender.filters = [('Time', 'Weekday')]
                 recommendedItems = recommender.TraditionalRecommendation(userID, topN=at)
                 contextualRecommendedItems = recommender.PostFilteringRecommendation(userID, topN=at)
 
                 intersectionSize = len([recommendedItem for rating, recommendedItem in recommendedItems if recommendedItem in relevantItemIDs])
                 contextualIntersection = len([recommendedItem for rating, recommendedItem in contextualRecommendedItems if recommendedItem in relevantItemIDs])
 
-                print intersectionSize
-                print contextualIntersection
-
-                for key in irStats.keys():
-                    irStats[key] = 0.0
+                # for key in irStats.keys():
+                #     irStats[key] = 0.0
 
                 # Precision
                 if len(recommendedItems) > 0:
-                    irStats['precision'] += \
-                            (intersectionSize / float(len(recommendedItems)))
+                    irStats['precision'] += (intersectionSize / float(len(recommendedItems)))
                     irFreqs['precision'] += 1
+                else:
+                    raise "No recommended items"
 
                 # Recall
-                irStats['recall'] += \
-                        (intersectionSize / float(len(relevantItemIDs)))
+                irStats['recall'] += (intersectionSize / float(len(relevantItemIDs)))
                 irFreqs['recall'] += 1
 
-                # nDCG. In computing, assume relevant IDs have relevance 1 and
-                # others 0.
-                # cumulativeGain = 0.0
-                # idealizedGain = 0.0
-                # for index, recommendedItem in enumerate(recommendedItems):
-                #     discount = 1.0 if index == 0 \
-                #                 else 1.0 / self.log2(index + 1)
-                #     if recommendedItem in relevantItemIDs:
-                #         cumulativeGain += discount
-                #     # Otherwise we are multiplying discount by relevance 0 so
-                #     # it does nothing.  Ideally results would be ordered with
-                #     # all relevant ones first, so this theoretical ideal list
-                #     # starts with number of relevant items equal to the total
-                #     # number of relevant items
-                #     if index < len(relevantItemIDs):
-                #         idealizedGain += discount
-                # irStats['nDCG'] += float(cumulativeGain) / idealizedGain \
-                #                     if idealizedGain else 0.0
-                # irFreqs['nDCG'] += 1
+                # nDCG. In computing, assume relevant IDs have relevance 1 and others 0.
+                cumulativeGain = 0.0
+                idealizedGain = 0.0
+                for index, recommendedItem in enumerate(recommendedItems):
+                    discount = 1.0 if index == 0 else 1.0 / self.log2(index + 1)
+                    if recommendedItem[1] in relevantItemIDs:
+                        cumulativeGain += discount
+                    # Otherwise we are multiplying discount by relevance 0 so
+                    # it does nothing.  Ideally results would be ordered with
+                    # all relevant ones first, so this theoretical ideal list
+                    # starts with number of relevant items equal to the total
+                    # number of relevant items
+                    if index < len(relevantItemIDs):
+                        idealizedGain += discount
+                irStats['nDCG'] += float(cumulativeGain) / idealizedGain #if idealizedGain else 0.0
+                irFreqs['nDCG'] += 1
 
         for key in irFreqs:
             irStats[key] = irStats[key] / float(irFreqs[key]) \

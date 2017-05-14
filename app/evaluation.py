@@ -10,10 +10,10 @@ from app.algorithm.cars.info_gain.info_gain_recommender import InfoGainRecommend
 import argparse
 
 def main():
-    __evaluate()
-    # data_object = DataObject()
-    # evaluator = PrecisionRecommenderEvaluator()
-    # recommender = InfoGainRecommender(data_object)
-    # result = evaluator.evaluate(recommender, data_object, 10, 1.0, 3.5)
-    # print result
+    # __evaluate()
+    data_object = DataObject()
+    evaluator = PrecisionRecommenderEvaluator()
+    recommender = InfoGainRecommender(data_object)
+    result = evaluator.evaluate(recommender, data_object, 10, 1.0, 3.5)
+    print result
 if __name__ == "__main__": main()
