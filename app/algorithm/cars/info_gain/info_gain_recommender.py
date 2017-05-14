@@ -150,13 +150,13 @@ class InfoGainRecommender(ContextRecommender):
             puic = float(nNeighbors_rated_item_in_same_context) / float(nNeighbors)
 
             # Weight
-            # filtered_recs.append((rating + rating * puic, movie))
+            filtered_recs.append((rating + rating * puic, movie))
 
             # Filter
-            if puic >= tpc:
-              filtered_recs.append((rating, movie))
-            else:
-              filtered_recs.append((rating - 0.25, movie))
+            # if puic >= tpc:
+            #   filtered_recs.append((rating, movie))
+            # else:
+            #   filtered_recs.append((rating - 0.25, movie))
 
             # # Filter - weight
             # if puic >= tpc:
