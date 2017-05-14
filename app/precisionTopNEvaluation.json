@@ -1,0 +1,71 @@
+{
+    "Time": {
+        "Weekend": {
+            "f1Score-ctx": 0.3558157133318495,
+            "recall-ctx": 0.37317460317460316,
+            "precision-ctx": 0.33999999999999997,
+            "precision": 0.26499999999999996,
+            "recall": 0.2881746031746031,
+            "nDCG": null,
+            "f1Score": 0.27610186513629836
+        },
+        "Weekday": {
+            "f1Score-ctx": 0.37136849949433126,
+            "recall-ctx": 0.3955158730158731,
+            "precision-ctx": 0.35,
+            "precision": 0.26499999999999996,
+            "recall": 0.2881746031746031,
+            "nDCG": null,
+            "f1Score": 0.27610186513629836
+        }
+    },
+    "Location": {
+        "Home": {
+            "f1Score-ctx": 0.3535268407486271,
+            "recall-ctx": 0.3681746031746032,
+            "precision-ctx": 0.33999999999999997,
+            "precision": 0.26499999999999996,
+            "recall": 0.2881746031746031,
+            "nDCG": null,
+            "f1Score": 0.27610186513629836
+        },
+        "Cinema": {
+            "f1Score-ctx": 0.36752827140549266,
+            "recall-ctx": 0.38690476190476186,
+            "precision-ctx": 0.35,
+            "precision": 0.26499999999999996,
+            "recall": 0.2881746031746031,
+            "nDCG": null,
+            "f1Score": 0.27610186513629836
+        }
+    },
+    "Companion": {
+        "Alone": {
+            "f1Score-ctx": 0.2913477198697068,
+            "recall-ctx": 0.3097619047619048,
+            "precision-ctx": 0.27499999999999997,
+            "precision": 0.26499999999999996,
+            "recall": 0.2881746031746031,
+            "nDCG": null,
+            "f1Score": 0.27610186513629836
+        },
+        "Partner": {
+            "f1Score-ctx": 0.35599599599599596,
+            "recall-ctx": 0.37357142857142855,
+            "precision-ctx": 0.33999999999999997,
+            "precision": 0.26499999999999996,
+            "recall": 0.2881746031746031,
+            "nDCG": null,
+            "f1Score": 0.27610186513629836
+        },
+        "Family": {
+            "f1Score-ctx": 0.37573729081149343,
+            "recall-ctx": 0.39904761904761904,
+            "precision-ctx": 0.355,
+            "precision": 0.26499999999999996,
+            "recall": 0.2881746031746031,
+            "nDCG": null,
+            "f1Score": 0.27610186513629836
+        }
+    }
+}

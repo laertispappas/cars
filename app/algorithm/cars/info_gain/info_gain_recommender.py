@@ -139,7 +139,8 @@ class InfoGainRecommender(ContextRecommender):
         filtered_recs = []
         nNeighbors = len(self.similarities)
         self.contextual_similarities = self.getContextualNearestNeighbors(self.target_user, sim_pearson, nNeighbors)
-        tpc = 0.2
+        tpc = 0.1
+        penalty = 0.5
 
         for rating, movie in recommendations:
             nNeighbors_rated_item_in_same_context = 0
@@ -156,13 +157,13 @@ class InfoGainRecommender(ContextRecommender):
             # if puic >= tpc:
             #   filtered_recs.append((rating, movie))
             # else:
-            #   filtered_recs.append((rating - 0.25, movie))
+            #   filtered_recs.append((rating - penalty, movie))
 
-            # # Filter - weight
+            # Filter - weight
             # if puic >= tpc:
             #     filtered_recs.append((rating + rating * puic, movie))
             # else:
-            #     filtered_recs.append((rating - 0.25, movie))
+            #     filtered_recs.append((rating - penalty, movie))
 
         filtered_recs.sort(reverse=True)
         return filtered_recs[0:topN]

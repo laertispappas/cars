@@ -1,135 +1,102 @@
-import scipy as sc
-import pylab as pl
-import itertools as it
+import sys
 import numpy as np
-import matplotlib.pyplot as plt
-import re
+import pylab as pl
+from sklearn.metrics import precision_recall_curve
 
-def fmeasure(p, r):
-    """ Calculates the fmeasure for precision p and recall r. """
-    return 2 * p * r / (p + r)
-
-def _fmeasureCurve(f, p):
-    """ The f1 measure is defined as: f(p,r) = 2*p*r / (p + r)
-        If you want to plot "equipotential-lines" into a
-        precision/recall diagramm (recall (y) over precision (x)),
-        for a given fixed f value we get the function:"""
-    return f * p / (2 * p - f)
-
-
-def _plotFMeasures(fstepsize=.01, stepsize=0.0001):
-    """ Plots 10 fmeasure Curves into the current canvas. """
-    p = sc.arange(0.001, 0.09, stepsize)[1:]  # @UndefinedVariable
-    for f in sc.arange(0.001, 0.09, fstepsize)[1:]:  # @UndefinedVariable
-        points = [(x, _fmeasureCurve(f, x)) for x in p
-                  if 0 < _fmeasureCurve(f, x) <= 1.5]
-        xs, ys = zip(*points)
-        curve, = pl.plot(xs, ys, "--", color="gray",
-                         linewidth=0.5)  # , label=r"$f=%.1f$"%f) # exclude labels, for legend @UnusedVariable
-        # bad hack:
-        # gets the 10th last datapoint, from that goes a bit to the left, and a bit down
-        pl.annotate(r"$f=%.1f$" % f, xy=(xs[-10], ys[-10]), xytext=(xs[-10] - 0.05, ys[-10] - 0.035), size="small",
-                    color="gray")
-
+from app.dataset.loader import AutoVivification
 
 colors = "bgrcmyk"  # 7 is a prime, so we'll loop over all combinations of colors and markers, when zipping their cycles
 markers = "so^>v<dph8"  # +x taken out, as no color.
 
-def plotPrecisionRecallDiagram(title="title", points=None, labels=None, loc="center right"):
-    """ Plots 10 f-Measure equipotential lines plus the (precision,recall) points
-        into the current canvas. Points is a list of (precision,recall) pairs.
-        Optionally you can also provide a labels (list of strings), which will be
-        used to create a legend, which is located at loc."""
-    if labels != None:
-        ax = pl.axes([0.1, 0.1, 0.7, 0.8])
-        # pl.axes([0.1, 0.1, 0.7, 0.8]) # llc_x, llc_y, width, height
-    else:
-        ax = pl.gca()
-    ax.set_xlim([0, 0.1])
-    ax.set_ylim([0, 0.1])
-    pl.title(title)
-    pl.xlabel("Precision")
-    pl.ylabel("Recall")
-    _plotFMeasures()
-
-    # _contourPlotFMeasure()
-
-    if points != None:
-        getColor = it.cycle(colors).next
-        getMarker = it.cycle(markers).next
-
-        scps = []  # scatter points
-        for i, (x, y) in enumerate(points):
-            label = None
-            if labels: label = labels[i]
-            scp = ax.scatter(x, y, label=label, s=50, linewidths=0.75,
-                             facecolor=getColor(), alpha=0.75, marker=getMarker())
-            scps.append(scp)
-            # pl.plot(x,y, label=label, marker=getMarker(), markeredgewidth=0.75, markerfacecolor=getColor())
-            # if labels: pl.text(x, y, label, fontsize="x-small")
-        if labels:
-            # pl.legend(scps, labels, loc=loc, scatterpoints=1, numpoints=1, fancybox=True) # passing scps & labels explicitly to work around a bug with legend seeming to miss out the 2nd scatterplot
-            pl.legend(scps, labels, loc=(1.01, 0), scatterpoints=1, numpoints=1,
-                      fancybox=True)  # passing scps & labels explicitly to work around a bug with legend seeming to miss out the 2nd scatterplot
-    pl.axis([-0.02, 1.02, -0.02, 1.02])  # xmin, xmax, ymin, ymax
-
-
 class Plotter(object):
     def __init__(self, metrics):
+        """
+        :param metrics: Dictionary irStats of the evaluation:
+        { Context: { condition: { precision: value, precision-ctx: valus-ctx, recall: r_val, recall-ctx: rctx_val } } }
+        """
         self.metrics = metrics
-        self.user_labels = ["User " + str(u) for u in metrics.keys()]
 
-    def plot_precision_recall_curves(self, contextual = False, fig_label = 'PrecRecallFigure', file_name = 'precRecallResult.png'):
-        precision_recalls = []
-        if contextual:
-            precision_recalls = [(self.metrics[u]['precision'][1], self.metrics[u]['recall'][1]) for u in self.metrics.keys()]
-        else:
-            precision_recalls = [(self.metrics[u]['precision'][0], self.metrics[u]['recall'][1]) for u in self.metrics.keys()]
+    def plotf1Score(self):
+        import matplotlib.pyplot as plt;
+        plt.rcdefaults()
+        import numpy as np
+        import matplotlib.pyplot as plt
 
-        plotPrecisionRecallDiagram(fig_label, precision_recalls, self.user_labels)
-        pl.savefig(file_name, dpi=300)
-        pl.show()
+        objects = ['Baseline'] + self.metrics.keys()
+        base_avg = self.metrics['Time']['Weekend']['f1Score']
+        time_avg = (self.metrics['Time']['Weekend']['f1Score-ctx'] + self.metrics['Time']['Weekday']['f1Score-ctx']) / 2
+        location_avg = (self.metrics['Location']['Home']['f1Score-ctx'] + self.metrics['Location']['Cinema']['f1Score-ctx']) / 2
+        companion_avg = (self.metrics['Companion']['Alone']['f1Score-ctx'] + self.metrics['Companion']['Partner']['f1Score-ctx'] + self.metrics['Companion']['Family']['f1Score-ctx']) / 3
 
-    def plot_precision_bar(self, type='precision'):
-        precisions = []
-        ctx_precisions = []
+        avgs = [base_avg, time_avg, location_avg, companion_avg]
+        y_pos = np.arange(len(objects))
 
-        users_ids = self.metrics.keys()
-        users_ids.sort()
-        for user in users_ids:
-            precisions.append(self.metrics[user][type][0])
-            ctx_precisions.append(self.metrics[user][type][1])
+        plt.bar(y_pos, avgs, align='center', alpha=0.5)
+        plt.xticks(y_pos, objects)
+        plt.ylabel('F1Score')
+        plt.xlabel('Context')
+        plt.title('F1-Score Evaluation Metrics')
 
-        N = len(precisions)
-        ind = np.arange(N)  # the x locations for total precision bars
-        width = 0.35  # the width of the bars
-
-        fig, ax = plt.subplots()
-        rects1 = ax.bar(ind, precisions, width, color='r')
-
-        rects2 = ax.bar(ind + width, ctx_precisions, width, color='y')
-
-        # add some text for labels, title and axes ticks
-        ax.set_ylabel(type)
-        ax.set_xlabel('users')
-        ax.set_xticks(ind + width)
-        ax.set_xticklabels(users_ids)
-
-        ax.legend((rects1[0], rects2[0]), ('Simple Recommendation', 'Contextual Recommendation'))
         plt.show()
 
-    def plot_num_of_recommendations(self):
-        recs = []
-        ctx_recs = []
-        user_ids = self.metrics.keys()
-        user_ids.sort()
-        for user in user_ids:
-            recs.append(self.metrics[user]['total_recs'])
-            ctx_recs.append(self.metrics[user]['total_ctx_recs'])
+    def plot(self):
+        import numpy as np
+        import matplotlib.pyplot as plt
 
-        plt.plot(user_ids, recs, '-b', label='Simple Recommendations')
-        plt.plot(user_ids, ctx_recs, '-r', label='Contextual Recommendations')
-        pl.title('Number of Recommendations per user')
-        plt.legend(loc='upper left')
-        plt.plot(user_ids, recs)
-        plt.show()
+        for context in self.metrics.keys():
+            labels = []
+            baseline_metrics = (self.metrics[context][self.metrics[context].keys()[0]]['precision'],
+                                self.metrics[context][self.metrics[context].keys()[0]]['recall'],
+                                self.metrics[context][self.metrics[context].keys()[0]]['f1Score'])
+            contextual_metrics = AutoVivification()
+            labels.extend(['Baseline', 'Baseline', 'Baseline'])
+
+            for condition in self.metrics[context].keys():
+                contextual_metrics[condition] = (self.metrics[context][condition]['precision-ctx'],
+                                                 self.metrics[context][condition]['recall-ctx'],
+                                                 self.metrics[context][condition]['f1Score-ctx'])
+
+                labels.extend([condition, condition, condition])
+            fig, ax = plt.subplots()
+            index = np.arange(3)
+            bar_width = 0.15
+            opacity = 0.8
+
+            rects1 = plt.bar(index, baseline_metrics, bar_width,
+                             alpha=opacity,
+                             color='b',
+                             label='Baseline')
+            colors = {
+                'Weekend': 'y',
+                'Weekday': 'c',
+                'Home': 'y',
+                'Cinema': 'c',
+                'Alone': 'y',
+                'Partner': 'c',
+                'Family': '#ee1f3f',
+            }
+            i = 1
+            for condition in contextual_metrics.keys():
+                plt.bar(index + bar_width * i, contextual_metrics[condition], bar_width,
+                        alpha=opacity,
+                        color=colors[condition],
+                        label=condition)
+                i += 1
+
+            rects = ax.patches
+            # Now make some labels
+            # labels = ["label%d" % i for i in xrange(len(rects))]
+            for rect, label in zip(rects, labels):
+                height = rect.get_height()
+                # ax.text(rect.get_x() + rect.get_width() / 2, height, None, ha='center', va='bottom')
+
+            # plt.xlabel('Metric')
+            # plt.ylabel('Value')
+            plt.title('Evaluation Metrics for ' + context)
+            plt.xticks(index + bar_width + 0.15, ('Precision', 'Recall', 'F1Score'))
+
+            import math
+            plt.ylim([0, 1])
+            plt.legend()
+            plt.tight_layout()
+            plt.show()
