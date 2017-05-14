@@ -38,8 +38,7 @@ class InfoGainRecommender(ContextRecommender):
         return self.cf_recs(user, simMeasure, nNeighbors, topN)
 
     def PostFilteringRecommendation(self, user, simMeasure=sim_pearson, nNeighbors=None, topN=5):
-        # TODO: remove all 999999999
-        recs = self.cf_recs(user, simMeasure, nNeighbors, topN=99999999999)
+        recs = self.cf_recs(user, simMeasure, nNeighbors, topN=100)
         return self.__contextual_filter(recs, topN)[0:topN]
 
 
@@ -109,15 +108,15 @@ class InfoGainRecommender(ContextRecommender):
     def getContextualNearestNeighbors(self, target, simMeasure, nNeighbors=None):
         prefs = self.training_data
 
-        context, filter_ctx_value = self.filters[0]
-        # if movie in self.training_data[neighbor] and context in self.training_data[neighbor][movie] and self.training_data[neighbor][movie][context] == filter_ctx_value:
         similarities = []
-        for other in prefs:
-            if other == target:
-                next
-            for movie in self.training_data[other]:
-                if filter_ctx_value in self.training_data[other][movie]:
-                    similarities.append((simMeasure(prefs, target, other), other))
+
+        for context, filter_ctx_value in self.filters:
+            for other in prefs:
+                if other == target:
+                    next
+                for movie in self.training_data[other]:
+                    if filter_ctx_value in self.training_data[other][movie]:
+                        similarities.append((simMeasure(prefs, target, other), other))
         # similarities = [(simMeasure(prefs, target, other), other) for other in prefs if target != other]
         similarities.sort(reverse=True)
         if nNeighbors != None:
@@ -149,8 +148,10 @@ class InfoGainRecommender(ContextRecommender):
                     if movie in self.training_data[neighbor] and filter_ctx_value in self.training_data[neighbor][movie]:
                         nNeighbors_rated_item_in_same_context += 1
             puic = float(nNeighbors_rated_item_in_same_context) / float(nNeighbors)
+
             # Weight
             # filtered_recs.append((rating + rating * puic, movie))
+
             # Filter
             if puic >= tpc:
               filtered_recs.append((rating, movie))

@@ -365,7 +365,6 @@ class PrecisionRecommenderEvaluator(RecommenderEvaluator):
                     continue
 
                 recommender.set_training_set(trainingUsers)
-                recommender.filters = [('Time', 'Weekday')]
                 recommendedItems = recommender.TraditionalRecommendation(userID, topN=at)
                 contextualRecommendedItems = recommender.PostFilteringRecommendation(userID, topN=at)
 
@@ -376,9 +375,10 @@ class PrecisionRecommenderEvaluator(RecommenderEvaluator):
                 #     irStats[key] = 0.0
 
                 # Precision
+
                 if len(recommendedItems) > 0:
                     irStats['precision'] += (intersectionSize / float(len(recommendedItems)))
-                    irStats['precision-ctx'] += (contextualIntersectionSize / float(len(recommendedItem)))
+                    irStats['precision-ctx'] += (contextualIntersectionSize / float(len(contextualRecommendedItems)))
                     irFreqs['precision'] += 1
                     irFreqs['precision-ctx'] += 1
                 else:
