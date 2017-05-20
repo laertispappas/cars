@@ -1,0 +1,71 @@
+{
+  "Time": {
+    "Weekend": {
+      "f1Score-ctx": 0.3360207327129226,
+      "recall-ctx": 0.35373015873015873,
+      "precision-ctx": 0.32,
+      "precision": 0.26499999999999996,
+      "recall": 0.2881746031746031,
+      "nDCG": null,
+      "f1Score": 0.27610186513629836
+    },
+    "Weekday": {
+      "f1Score-ctx": 0.3698925306100626,
+      "recall-ctx": 0.3921825396825397,
+      "precision-ctx": 0.35000000000000003,
+      "precision": 0.26499999999999996,
+      "recall": 0.2881746031746031,
+      "nDCG": null,
+      "f1Score": 0.27610186513629836
+    }
+  },
+  "Location": {
+    "Home": {
+      "f1Score-ctx": 0.35791254353474483,
+      "recall-ctx": 0.37781746031746033,
+      "precision-ctx": 0.33999999999999997,
+      "precision": 0.26499999999999996,
+      "recall": 0.2881746031746031,
+      "nDCG": null,
+      "f1Score": 0.27610186513629836
+    },
+    "Cinema": {
+      "f1Score-ctx": 0.379675923513781,
+      "recall-ctx": 0.40162698412698405,
+      "precision-ctx": 0.35999999999999993,
+      "precision": 0.26499999999999996,
+      "recall": 0.2881746031746031,
+      "nDCG": null,
+      "f1Score": 0.27610186513629836
+    }
+  },
+  "Companion": {
+    "Alone": {
+      "f1Score-ctx": 0.2845704181402123,
+      "recall-ctx": 0.30726190476190485,
+      "precision-ctx": 0.265,
+      "precision": 0.26499999999999996,
+      "recall": 0.2881746031746031,
+      "nDCG": null,
+      "f1Score": 0.27610186513629836
+    },
+    "Partner": {
+      "f1Score-ctx": 0.35948429752066113,
+      "recall-ctx": 0.37523809523809526,
+      "precision-ctx": 0.345,
+      "precision": 0.26499999999999996,
+      "recall": 0.2881746031746031,
+      "nDCG": null,
+      "f1Score": 0.27610186513629836
+    },
+    "Family": {
+      "f1Score-ctx": 0.40403202186859316,
+      "recall-ctx": 0.43793650793650796,
+      "precision-ctx": 0.375,
+      "precision": 0.26499999999999996,
+      "recall": 0.2881746031746031,
+      "nDCG": null,
+      "f1Score": 0.27610186513629836
+    }
+  }
+}
